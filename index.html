@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fogón Nahuelbuta - Menú Digital</title>
+    <!-- Fuentes Elegantes -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #1a1614; /* Madera oscura / Carbón */
+            --card-bg: #25201d;
+            --orange-fogon: #f05a28;
+            --green-araucaria: #2d5a27;
+            --text-main: #f4f1ea;
+            --text-muted: #a8a29e;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Header y Logo */
+        header {
+            padding: 40px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(to bottom, #25201d, var(--bg-color));
+        }
+
+        .logo-container {
+            width: 180px;
+            margin-bottom: 15px;
+        }
+
+        .logo-container img {
+            width: 100%;
+            height: auto;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+        }
+
+        .slogan {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .divider {
+            width: 60px;
+            height: 2px;
+            background: var(--orange-fogon);
+            margin: 15px 0;
+        }
+
+        /* Filtros */
+        .sticky-nav {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(26, 22, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding: 15px 0;
+            overflow-x: auto;
+            white-space: nowrap;
+            scrollbar-width: none;
+        }
+
+        .sticky-nav::-webkit-scrollbar { display: none; }
+
+        .filter-container {
+            display: flex;
+            gap: 10px;
+            padding: 0 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .filter-btn {
+            background: var(--card-bg);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active {
+            background: var(--orange-fogon);
+            border-color: var(--orange-fogon);
+            color: white;
+            box-shadow: 0 4px 15px rgba(240, 90, 40, 0.3);
+        }
+
+        /* Menú Grid */
+        main {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 0 20px 80px;
+        }
+
+        .grid-menu {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .grid-menu { grid-template-columns: 1fr 1fr; }
+        }
+
+        /* Tarjeta de Plato */
+        .plato-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            overflow: hidden;
+            display: flex;
+            border: 1px solid rgba(255,255,255,0.03);
+            transition: transform 0.3s ease;
+        }
+
+        .plato-card.agotado {
+            opacity: 0.5;
+            filter: grayscale(0.8);
+        }
+
+        .plato-img {
+            width: 120px;
+            min-height: 120px;
+            background: #111;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .plato-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .plato-info {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .plato-header h3 {
+            font-family: 'Playfair Display', serif;
+            font-size: 17px;
+            margin-bottom: 5px;
+            color: var(--text-main);
+        }
+
+        .plato-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            font-weight: 300;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .plato-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .precio {
+            color: var(--orange-fogon);
+            font-weight: 900;
+            font-size: 18px;
+        }
+
+        .badge-cat {
+            font-size: 8px;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--green-araucaria);
+            background: rgba(45, 90, 39, 0.15);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid rgba(45, 90, 39, 0.3);
+        }
+
+        .agotado-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .agotado-tag {
+            color: #ff4757;
+            border: 1px solid #ff4757;
+            padding: 2px 6px;
+            font-size: 9px;
+            font-weight: 900;
+            text-transform: uppercase;
+            border-radius: 2px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 20px;
+            text-align: center;
+            background: #0d0a09;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .footer-logo {
+            width: 80px;
+            opacity: 0.3;
+            margin-bottom: 20px;
+        }
+
+        .footer-info {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+        }
+
+        /* Loading */
+        #loader {
+            position: fixed;
+            inset: 0;
+            background: var(--bg-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(240, 90, 40, 0.1);
+            border-top-color: var(--orange-fogon);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loader">
+        <div class="spinner"></div>
+        <p style="margin-top: 20px; font-size: 10px; letter-spacing: 3px; color: var(--orange-fogon);">CARGANDO FOGÓN...</p>
+    </div>
+
+    <header>
+        <div class="logo-container">
+            <img src="logo fogon pub 2.png" alt="Fogón Nahuelbuta Logo" onerror="this.style.display='none'">
+        </div>
+        <div class="divider"></div>
+        <p class="slogan">Sabor del campo chileno</p>
+    </header>
+
+    <nav class="sticky-nav">
+        <div class="filter-container" id="category-filters">
+            <!-- Los filtros se cargarán aquí -->
+        </div>
+    </nav>
+
+    <main>
+        <div class="grid-menu" id="menu-items">
+            <!-- Los platos se cargarán aquí -->
+        </div>
+    </main>
+
+    <footer>
+        <img src="logo fogon pub 2.png" class="footer-logo" alt="Logo">
+        <p class="footer-info">CURANILAHUE · CHILE</p>
+        <p style="font-size: 9px; margin-top: 10px; opacity: 0.4;">DISEÑO & FOTOGRAFÍA GASTRONÓMICA</p>
+    </footer>
+
+    <script>
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgQ-ZRf2h64mfosx951LpKzVI5lIPAOuyb9ocFupCv7PycFK6tfY4tzWoBOOTmBluSXVmgH86YumWY/pub?gid=0&single=true&output=csv';
+        
+        let allItems = [];
+
+        function formatCLP(val) {
+            const num = parseInt(val.toString().replace(/\D/g, ''));
+            if (isNaN(num)) return `$ ${val}`;
+            return `$ ${num.toLocaleString('es-CL')}`;
+        }
+
+        async function loadData() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                const rows = data.split('\n').slice(1);
+
+                allItems = rows.map(row => {
+                    const columns = row.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g);
+                    if (!columns || columns.length < 5) return null;
+                    
+                    const clean = columns.map(c => c.replace(/^"|"$/g, '').trim());
+                    return {
+                        categoria: clean[0],
+                        nombre: clean[1],
+                        descripcion: clean[2],
+                        precio: clean[3],
+                        disponible: clean[4]?.toUpperCase() === 'SI',
+                        imagen: clean[5] || null
+                    };
+                }).filter(i => i !== null);
+
+                renderFilters();
+                renderMenu('Todo');
+                document.getElementById('loader').style.display = 'none';
+
+            } catch (error) {
+                console.error("Error cargando el menú:", error);
+                document.getElementById('loader').innerHTML = "<p>Error al conectar con la carta.</p>";
+            }
+        }
+
+        function renderFilters() {
+            const container = document.getElementById('category-filters');
+            const rawCats = [...new Set(allItems.map(i => i.categoria))];
+            
+            const priority = ['Carnes', 'Tablas', 'Sandwich'];
+            const others = rawCats.filter(c => !priority.includes(c)).sort();
+            const finalCats = ['Todo', ...priority.filter(p => rawCats.includes(p)), ...others];
+
+            container.innerHTML = finalCats.map(cat => `
+                <button class="filter-btn ${cat === 'Todo' ? 'active' : ''}" onclick="filterBy('${cat}', this)">
+                    ${cat}
+                </button>
+            `).join('');
+        }
+
+        function filterBy(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderMenu(cat);
+            window.scrollTo({ top: document.querySelector('header').offsetHeight - 20, behavior: 'smooth' });
+        }
+
+        function renderMenu(cat) {
+            const container = document.getElementById('menu-items');
+            const filtered = cat === 'Todo' ? allItems : allItems.filter(i => i.categoria === cat);
+
+            container.innerHTML = filtered.map(item => `
+                <div class="plato-card ${!item.disponible ? 'agotado' : ''}">
+                    <div class="plato-img">
+                        ${item.imagen ? `<img src="${item.imagen}" alt="${item.nombre}">` : '<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; opacity:0.1">🍽️</div>'}
+                        ${!item.disponible ? '<div class="agotado-overlay"><span class="agotado-tag">Agotado</span></div>' : ''}
+                    </div>
+                    <div class="plato-info">
+                        <div class="plato-header">
+                            <h3>${item.nombre}</h3>
+                            <p class="plato-desc">${item.descripcion}</p>
+                        </div>
+                        <div class="plato-footer">
+                            <span class="precio">${formatCLP(item.precio)}</span>
+                            <span class="badge-cat">${item.categoria}</span>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
