@@ -3,285 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Digital - Sabor & Tradición</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Menú Digital Actualizable</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600&display=swap');
-        
+        :root {
+            --primary: #2c3e50;
+            --accent: #e67e22;
+            --price: #27ae60;
+            --bg: #f8f9fa;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            scroll-behavior: smooth;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--primary);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.5;
         }
-        .font-serif {
-            font-family: 'Playfair Display', serif;
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
         }
-        .category-tab.active {
-            border-bottom: 2px solid #b45309;
-            color: #b45309;
+
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            color: var(--primary);
+            border-bottom: 3px solid var(--accent);
+            display: inline-block;
+            width: 100%;
+            padding-bottom: 10px;
         }
-        .scrollbar-hide::-webkit-scrollbar {
-            display: none;
+
+        .categoria-titulo {
+            background-color: var(--accent);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            margin-top: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .scrollbar-hide {
-            -ms-overflow-style: none;
-            scrollbar-width: none;
+
+        .plato {
+            display: flex;
+            background: white;
+            margin: 15px 0;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
         }
-        /* Modal Animations */
-        .modal-overlay {
-            transition: opacity 0.3s ease;
-            backdrop-filter: blur(4px);
+
+        .plato:hover {
+            transform: translateY(-3px);
         }
-        .modal-content {
-            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+        .plato.agotado {
+            filter: grayscale(1);
+            opacity: 0.6;
         }
-        .modal-hidden {
-            opacity: 0;
-            pointer-events: none;
+
+        .foto-plato {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            flex-shrink: 0;
         }
-        .modal-hidden .modal-content {
-            transform: scale(0.9) translateY(20px);
+
+        .info-plato {
+            padding: 15px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .nombre-plato {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .precio-plato {
+            color: var(--price);
+            font-size: 1.1rem;
+        }
+
+        .descripcion-plato {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .status-badge {
+            font-size: 0.7rem;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 10px;
+        }
+
+        @media (max-width: 480px) {
+            .plato { flex-direction: column; }
+            .foto-plato { width: 100%; height: 200px; }
         }
     </style>
 </head>
-<body class="bg-stone-50 text-stone-900">
+<body>
 
-    <!-- Encabezado / Hero -->
-    <header class="relative h-64 flex items-center justify-center text-white overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1200&q=80" 
-             alt="Fondo de restaurante" 
-             class="absolute inset-0 w-full h-full object-cover brightness-50">
-        <div class="relative text-center z-10 px-4">
-            <h1 class="text-5xl font-serif mb-2 text-white">Sabor & Tradición</h1>
-            <p class="text-lg font-light tracking-widest uppercase">Cocina de Autor y Pasión</p>
-        </div>
-    </header>
-
-    <!-- Navegación por Categorías -->
-    <nav class="sticky top-0 bg-white/80 backdrop-blur-md shadow-sm z-40 overflow-x-auto whitespace-nowrap scrollbar-hide">
-        <div class="flex justify-center p-4 space-x-8 max-w-4xl mx-auto">
-            <button onclick="filterMenu('principales')" class="category-tab active px-2 py-1 font-semibold uppercase text-xs tracking-wider transition-all">Principales</button>
-            <button onclick="filterMenu('carnes')" class="category-tab px-2 py-1 font-semibold uppercase text-xs tracking-wider transition-all">Carnes</button>
-            <button onclick="filterMenu('sandwiches')" class="category-tab px-2 py-1 font-semibold uppercase text-xs tracking-wider transition-all">Sandwiches</button>
-            <button onclick="filterMenu('pizzas')" class="category-tab px-2 py-1 font-semibold uppercase text-xs tracking-wider transition-all">Pizzas</button>
-        </div>
-    </nav>
-
-    <!-- Contenido del Menú -->
-    <main class="max-w-5xl mx-auto px-4 py-12">
-        <div id="menu-container" class="grid grid-cols-1 md:grid-cols-2 gap-8 transition-opacity duration-300">
-            <!-- Los items se cargarán dinámicamente aquí -->
-        </div>
-    </main>
-
-    <!-- Modal de Detalles -->
-    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 modal-hidden">
-        <div class="absolute inset-0 bg-black/60 modal-overlay" onclick="closeModal()"></div>
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto relative z-10 modal-content shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 bg-white/80 hover:bg-white p-2 rounded-full shadow-md z-20 transition-colors">
-                <i class="fas fa-times text-stone-800"></i>
-            </button>
-            
-            <div id="modal-body">
-                <!-- El contenido se inyecta mediante JS -->
-            </div>
-        </div>
+    <div class="container">
+        <h1>Nuestra Carta</h1>
+        <div id="menu-content">Cargando menú actualizado...</div>
     </div>
 
-    <!-- Pie de Página / Redes Sociales -->
-    <footer class="bg-stone-900 text-stone-300 py-12 px-4 text-center">
-        <div class="mb-6">
-            <h2 class="text-2xl font-serif text-white mb-4">Visítanos</h2>
-            <p>Calle Ficticia 123, Ciudad Ejemplo</p>
-            <p>Lun - Dom: 12:00 PM - 11:00 PM</p>
-        </div>
-        <div class="flex justify-center space-x-6 text-2xl mb-8">
-            <a href="https://instagram.com" target="_blank" class="hover:text-amber-500 transition-colors">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="#" class="hover:text-amber-500 transition-colors">
-                <i class="fab fa-facebook"></i>
-            </a>
-            <a href="https://wa.me/123456789" class="hover:text-amber-500 transition-colors">
-                <i class="fab fa-whatsapp"></i>
-            </a>
-        </div>
-        <p class="text-xs text-stone-500 uppercase tracking-tighter">&copy; 2024 Sabor & Tradición - Todos los derechos reservados</p>
-    </footer>
-
     <script>
-        // Datos del Menú (40 items en total)
-        const menuData = [
-            // PLATOS PRINCIPALES (10)
-            { id: 1, category: 'principales', name: 'Pasta del Bosque', description: 'Tagliatelle artesanal con salsa de trufa negra.', price: '$14.50', image: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=800&q=80', details: 'Nuestra pasta insignia. Amasada diariamente con huevos de campo, servida con una reducción de crema, trufa negra de temporada y champiñones silvestres.', ingredients: ['Pasta fresca', 'Trufa negra', 'Crema', 'Parmesano', 'Hongos'], calories: '650 kcal' },
-            { id: 2, category: 'principales', name: 'Risotto de Azafrán', description: 'Arroz arborio cremoso con hilos de azafrán.', price: '$16.00', image: 'https://images.unsplash.com/photo-1476124369491-e7addf5db371?auto=format&fit=crop&w=800&q=80', details: 'Un clásico italiano. El azafrán aporta un color dorado vibrante y un aroma inigualable, complementado con camarones frescos salteados.', ingredients: ['Arroz Arborio', 'Azafrán', 'Camarones', 'Vino blanco'], calories: '580 kcal' },
-            { id: 3, category: 'principales', name: 'Salmón al Eneldo', description: 'Filete a la plancha con costra de hierbas.', price: '$19.00', image: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=800&q=80', details: 'Salmón rosado seleccionado, cocinado a punto con una costra crujiente de eneldo y limón. Se acompaña de vegetales de estación.', ingredients: ['Salmón', 'Eneldo', 'Limón', 'Espárragos'], calories: '420 kcal' },
-            { id: 4, category: 'principales', name: 'Lasagna de la Nonna', description: 'Capas de pasta fresca y boloñesa tradicional.', price: '$13.50', image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80', details: 'Receta familiar. Carne de res premium braseada por 4 horas en pomodoro casero y capas generosas de bechamel.', ingredients: ['Res', 'Tomate', 'Mozzarella', 'Bechamel'], calories: '780 kcal' },
-            { id: 5, category: 'principales', name: 'Pollo al Curry Rojo', description: 'Tiras de pollo en salsa tailandesa cremosa.', price: '$15.00', image: 'https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&w=800&q=80', details: 'Sabor oriental. Curry rojo equilibrado con leche de coco, albahaca tailandesa y vegetales crocantes.', ingredients: ['Pollo', 'Leche de coco', 'Curry rojo', 'Arroz jazmín'], calories: '510 kcal' },
-            { id: 6, category: 'principales', name: 'Gnocchi al Pesto', description: 'Ñoquis de papa con pesto de albahaca fresca.', price: '$12.00', image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80', details: 'Hechos a mano. El pesto se prepara en mortero con albahaca genovesa y piñones tostados.', ingredients: ['Papas', 'Albahaca', 'Piñones', 'Pecorino'], calories: '490 kcal' },
-            { id: 7, category: 'principales', name: 'Paella Marinera', description: 'Mix de mariscos y azafrán sobre arroz bomba.', price: '$21.00', image: 'https://images.unsplash.com/photo-1534080564607-6e793302bbb8?auto=format&fit=crop&w=800&q=80', details: 'Lo mejor del mar. Langostinos, calamares y mejillones cocinados en un fondo intenso de pescado.', ingredients: ['Arroz bomba', 'Mariscos', 'Azafrán', 'Caldo de pescado'], calories: '620 kcal' },
-            { id: 8, category: 'principales', name: 'Bowl Buddha', description: 'Quinoa, palta, kale y garbanzos crocantes.', price: '$11.50', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80', details: 'Nutrición pura. Una base de quinoa real con vegetales frescos y proteína vegetal.', ingredients: ['Quinoa', 'Palta', 'Garbanzos', 'Tahini'], calories: '380 kcal' },
-            { id: 9, category: 'principales', name: 'Ravioles de Calabaza', description: 'Rellenos de calabaza asada y nuez.', price: '$14.00', image: 'https://images.unsplash.com/photo-1473093226795-af9932fe5856?auto=format&fit=crop&w=800&q=80', details: 'Dulzor natural. Servidos con una emulsión de manteca de salvia.', ingredients: ['Calabaza', 'Nueces', 'Manteca', 'Salvia'], calories: '540 kcal' },
-            { id: 10, category: 'principales', name: 'Canelones de Espinaca', description: 'Espinaca y ricotta con salsa rosa.', price: '$13.00', image: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80', details: 'Pasta suave rellena de espinacas tiernas, gratinada al horno.', ingredients: ['Espinaca', 'Ricotta', 'Nuez moscada', 'Pomodoro'], calories: '560 kcal' },
+        // URL de tu Google Sheet en formato CSV
+        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgQ-ZRf2h64mfosx951LpKzVI5lIPAOuyb9ocFupCv7PycFK6tfY4tzWoBOOTmBluSXVmgH86YumWY/pub?gid=0&single=true&output=csv';
 
-            // CARNES (10)
-            { id: 11, category: 'carnes', name: 'Ribeye a la Leña', description: 'Corte premium de 400g madurado.', price: '$28.00', image: 'https://images.unsplash.com/photo-1546241072-48010ad28c2c?auto=format&fit=crop&w=800&q=80', details: 'Ojo de bife seleccionado. Sellado a la leña de quebracho para un sabor ahumado único.', ingredients: ['Res Ribeye', 'Sal de mar', 'Romero', 'Papas rústicas'], calories: '950 kcal' },
-            { id: 12, category: 'carnes', name: 'Cordero Patagónico', description: 'Costillas braseadas con reducción de Malbec.', price: '$24.00', image: 'https://images.unsplash.com/photo-1603048588665-791ca8aea617?auto=format&fit=crop&w=800&q=80', details: 'Tiernas costillas cocinadas a baja temperatura por 12 horas.', ingredients: ['Cordero', 'Vino Malbec', 'Zanahorias', 'Tomillo'], calories: '720 kcal' },
-            { id: 13, category: 'carnes', name: 'Vacío Tradicional', description: 'Corte tradicional argentino muy tierno.', price: '$22.50', image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80', details: 'Corte seleccionado cocinado a fuego lento.', ingredients: ['Vacío', 'Chimichurri', 'Sal gruesa'], calories: '840 kcal' },
-            { id: 14, category: 'carnes', name: 'Lomo al Malbec', description: 'Medallón de lomo en reducción de vino.', price: '$26.00', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80', details: 'Lomo vacuno premium con milhojas de papa.', ingredients: ['Lomo', 'Malbec', 'Papas', 'Crema'], calories: '680 kcal' },
-            { id: 15, category: 'carnes', name: 'Parrillada Mixta', description: 'Mix de cortes para compartir (2 personas).', price: '$45.00', image: 'https://images.unsplash.com/photo-1529692236671-f1f6e9481b2e?auto=format&fit=crop&w=800&q=80', details: 'Selección de asado, vacío, chorizos y morcillas.', ingredients: ['Res', 'Cerdo', 'Embutidos', 'Ensalada'], calories: '1800 kcal' },
-            { id: 16, category: 'carnes', name: 'Bondiola Glaseada', description: 'Cerdo braseado con miel y mostaza.', price: '$18.00', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80', details: 'Bondiola de cerdo tierna con puré de manzanas.', ingredients: ['Cerdo', 'Miel', 'Mostaza', 'Manzanas'], calories: '750 kcal' },
-            { id: 17, category: 'carnes', name: 'Milanesa Napolitana', description: 'Res empanizada con tomate y mozzarella.', price: '$15.50', image: 'https://images.unsplash.com/photo-1632778149975-420e0e75ee6d?auto=format&fit=crop&w=800&q=80', details: 'Un clásico porteño. Gratinada al horno.', ingredients: ['Res', 'Pan rallado', 'Jamón', 'Queso'], calories: '890 kcal' },
-            { id: 18, category: 'carnes', name: 'Entraña Grillada', description: 'Corte fino con ensalada de rúcula.', price: '$21.00', image: 'https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80', details: 'Corte muy sabroso a la parrilla.', ingredients: ['Entraña', 'Rúcula', 'Parmesano', 'Limón'], calories: '610 kcal' },
-            { id: 19, category: 'carnes', name: 'Ossobuco Tradicional', description: 'Guisado lentamente con polenta.', price: '$19.50', image: 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80', details: 'Cocción de 6 horas en caldo de verduras y vino.', ingredients: ['Ossobuco', 'Polenta', 'Zanahoria', 'Vino'], calories: '700 kcal' },
-            { id: 20, category: 'carnes', name: 'Bitoque de Res', description: 'Albóndigas rústicas en salsa de pimienta.', price: '$16.50', image: 'https://images.unsplash.com/photo-1529692236671-f1f6e9481b2e?auto=format&fit=crop&w=800&q=80', details: 'Receta casera con arroz pilaf.', ingredients: ['Res', 'Pimienta', 'Arroz', 'Crema'], calories: '640 kcal' },
+        async function initMenu() {
+            try {
+                const response = await fetch(SHEET_URL);
+                const data = await response.text();
+                
+                // Procesar filas del CSV
+                const rows = data.split('\n').slice(1);
+                const container = document.getElementById('menu-content');
+                container.innerHTML = '';
 
-            // SANDWICHES (10)
-            { id: 21, category: 'sandwiches', name: 'Burger Gourmet', description: 'Res, queso brie y cebolla caramelizada.', price: '$12.50', image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80', details: 'Blend de res de la casa en pan brioche artesanal.', ingredients: ['Res', 'Brie', 'Cebolla', 'Rúcula'], calories: '850 kcal' },
-            { id: 22, category: 'sandwiches', name: 'Club Sandwich', description: 'Pollo, tocino y huevo en pan tostado.', price: '$10.00', image: 'https://images.unsplash.com/photo-1528735602780-2552fd46c7af?auto=format&fit=crop&w=800&q=80', details: 'Triple piso clásico con mayonesa de la casa.', ingredients: ['Pollo', 'Tocino', 'Huevo', 'Lechuga'], calories: '720 kcal' },
-            { id: 23, category: 'sandwiches', name: 'Pulled Pork', description: 'Cerdo desmechado marinado en barbacoa.', price: '$11.00', image: 'https://images.unsplash.com/photo-1521390188846-e2a3a97453a0?auto=format&fit=crop&w=800&q=80', details: 'Cocinada por 8 horas, servida con coleslaw.', ingredients: ['Cerdo', 'BBQ', 'Repollo', 'Pan Frica'], calories: '780 kcal' },
-            { id: 24, category: 'sandwiches', name: 'Veggie Delice', description: 'Vegetales asados y hummus en pan integral.', price: '$9.50', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80', details: 'Opción saludable con zucchini y pimientos.', ingredients: ['Zucchini', 'Pimientos', 'Hummus', 'Espinaca'], calories: '450 kcal' },
-            { id: 25, category: 'sandwiches', name: 'Lomito Completo', description: 'Lomo, jamón, queso y huevo frito.', price: '$14.00', image: 'https://images.unsplash.com/photo-1553909489-cd47e0907980?auto=format&fit=crop&w=800&q=80', details: 'El sándwich más contundente de la carta.', ingredients: ['Lomo', 'Jamón', 'Queso', 'Huevo'], calories: '980 kcal' },
-            { id: 26, category: 'sandwiches', name: 'Chicken Wrap', description: 'Pollo crispy, palta y salsa ranchera.', price: '$10.50', image: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=800&q=80', details: 'Envuelta en tortilla de trigo artesanal.', ingredients: ['Pollo', 'Palta', 'Maíz', 'Salsa Ranch'], calories: '590 kcal' },
-            { id: 27, category: 'sandwiches', name: 'Philly Cheesesteak', description: 'Res salteada con pimientos y queso fundido.', price: '$13.00', image: 'https://images.unsplash.com/photo-1521302273981-397235c58c65?auto=format&fit=crop&w=800&q=80', details: 'Estilo clásico de Filadelfia.', ingredients: ['Res', 'Pimientos', 'Cebolla', 'Queso'], calories: '820 kcal' },
-            { id: 28, category: 'sandwiches', name: 'Baguette Caprese', description: 'Mozzarella, tomate y albahaca.', price: '$9.00', image: 'https://images.unsplash.com/photo-1539252554452-da09b392f439?auto=format&fit=crop&w=800&q=80', details: 'Fresco y ligero en pan baguette crocante.', ingredients: ['Mozzarella', 'Tomate', 'Albahaca', 'Oliva'], calories: '410 kcal' },
-            { id: 29, category: 'sandwiches', name: 'Pastrami Special', description: 'Lonchas de pastrami y pepinillos.', price: '$13.50', image: 'https://images.unsplash.com/photo-1481070414801-51fd732d7184?auto=format&fit=crop&w=800&q=80', details: 'Servido con mostaza dijon en pan de centeno.', ingredients: ['Pastrami', 'Pepinillos', 'Mostaza', 'Centeno'], calories: '630 kcal' },
-            { id: 30, category: 'sandwiches', name: 'Choripán de Autor', description: 'Chorizo artesanal con chimichurri.', price: '$8.50', image: 'https://images.unsplash.com/photo-1534422298391-e4f8c170db0f?auto=format&fit=crop&w=800&q=80', details: 'Chorizo parrillero con salsa criolla.', ingredients: ['Chorizo', 'Chimichurri', 'Criolla', 'Pan Francés'], calories: '550 kcal' },
+                let currentCategory = '';
 
-            // PIZZAS (10)
-            { id: 31, category: 'pizzas', name: 'Margherita Especial', description: 'Pomodoro y mozzarella di bufala.', price: '$13.00', image: 'https://images.unsplash.com/photo-1574071318508-1cdbad80ad38?auto=format&fit=crop&w=800&q=80', details: 'Sabor tradicional italiano.', ingredients: ['Tomate', 'Mozzarella', 'Albahaca', 'Oliva'], calories: '750 kcal' },
-            { id: 32, category: 'pizzas', name: 'Pizza Diávola', description: 'Salami picante y aceitunas negras.', price: '$15.00', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', details: 'Para amantes del picante.', ingredients: ['Salami', 'Chili', 'Aceitunas', 'Mozzarella'], calories: '880 kcal' },
-            { id: 33, category: 'pizzas', name: 'Cuatro Quesos', description: 'Mix de quesos sobre base blanca.', price: '$14.50', image: 'https://images.unsplash.com/photo-1573821663912-569905455b1c?auto=format&fit=crop&w=800&q=80', details: 'Cremosa y llena de sabor.', ingredients: ['Mozzarella', 'Gorgonzola', 'Parmesano', 'Fontina'], calories: '920 kcal' },
-            { id: 34, category: 'pizzas', name: 'Fugazzeta', description: 'Abundante cebolla blanca y mozzarella.', price: '$16.00', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', details: 'Especialidad rellena de la casa.', ingredients: ['Cebolla', 'Queso', 'Orégano', 'Oliva'], calories: '1100 kcal' },
-            { id: 35, category: 'pizzas', name: 'Mediterránea', description: 'Tomates secos, rúcula y jamón crudo.', price: '$17.00', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80', details: 'Frescura y elegancia en cada porción.', ingredients: ['Jamón crudo', 'Rúcula', 'Tomates secos', 'Parmesano'], calories: '840 kcal' },
-            { id: 36, category: 'pizzas', name: 'Bbq Chicken', description: 'Pollo asado, panceta y salsa barbacoa.', price: '$15.50', image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?auto=format&fit=crop&w=800&q=80', details: 'Intensidad americana.', ingredients: ['Pollo', 'Panceta', 'BBQ', 'Cebolla'], calories: '950 kcal' },
-            { id: 37, category: 'pizzas', name: 'Ortolana', description: 'Mix de vegetales asados de estación.', price: '$13.50', image: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?auto=format&fit=crop&w=800&q=80', details: 'Opción vegetariana deliciosa.', ingredients: ['Berenjena', 'Pimientos', 'Espárragos', 'Tomate'], calories: '680 kcal' },
-            { id: 38, category: 'pizzas', name: 'Napolitana', description: 'Tomate fresco, ajo y perejil.', price: '$12.50', image: 'https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=800&q=80', details: 'Clásica con ajo y oliva.', ingredients: ['Tomate', 'Ajo', 'Mozzarella', 'Perejil'], calories: '720 kcal' },
-            { id: 39, category: 'pizzas', name: 'Pizza de Trufa', description: 'Champignon, huevo y aceite de trufa.', price: '$18.50', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', details: 'La pizza más lujosa de la carta.', ingredients: ['Trufa', 'Hongos', 'Huevo', 'Crema'], calories: '890 kcal' },
-            { id: 40, category: 'pizzas', name: 'Carbonara', description: 'Panceta, huevo y pimienta negra.', price: '$16.00', image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80', details: 'Sabor a pasta romana en una pizza.', ingredients: ['Panceta', 'Huevo', 'Queso', 'Pimienta'], calories: '940 kcal' }
-        ];
+                rows.forEach(row => {
+                    // Manejo básico de CSV (separado por comas)
+                    const columns = row.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                    if (columns.length < 5) return;
 
-        function filterMenu(category) {
-            const container = document.getElementById('menu-container');
-            const tabs = document.querySelectorAll('.category-tab');
-            
-            tabs.forEach(tab => {
-                tab.classList.remove('active');
-                if(tab.innerText.toLowerCase().includes(category)) tab.classList.add('active');
-            });
+                    const [categoria, nombre, descripcion, precio, disponible, fotoUrl] = columns.map(c => c.replace(/"/g, '').trim());
 
-            container.style.opacity = '0';
-            
-            setTimeout(() => {
-                const filtered = menuData.filter(item => item.category === category);
-                container.innerHTML = filtered.map(item => `
-                    <div class="flex flex-col sm:flex-row bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all cursor-pointer group" onclick="openDetails(${item.id})">
-                        <div class="sm:w-1/3 h-48 sm:h-auto overflow-hidden">
-                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
-                        </div>
-                        <div class="sm:w-2/3 p-6 flex flex-col justify-between">
-                            <div>
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="text-lg font-serif font-bold text-stone-800 leading-tight">${item.name}</h3>
-                                    <span class="text-amber-700 font-bold ml-2">${item.price}</span>
-                                </div>
-                                <p class="text-stone-500 text-sm leading-relaxed line-clamp-2">${item.description}</p>
-                            </div>
-                            <div class="mt-4 flex items-center text-xs text-amber-600 font-semibold uppercase tracking-wider">
-                                <span>Ver detalles</span>
-                                <i class="fas fa-arrow-right ml-2 group-hover:translate-x-1 transition-transform"></i>
-                            </div>
-                        </div>
-                    </div>
-                `).join('');
-                container.style.opacity = '1';
-            }, 250);
-        }
+                    // Insertar encabezado de categoría
+                    if (categoria !== currentCategory) {
+                        currentCategory = categoria;
+                        const catHeader = document.createElement('h2');
+                        catHeader.className = 'categoria-titulo';
+                        catHeader.textContent = categoria;
+                        container.appendChild(catHeader);
+                    }
 
-        function openDetails(id) {
-            const item = menuData.find(i => i.id === id);
-            const modal = document.getElementById('detail-modal');
-            const body = document.getElementById('modal-body');
-
-            body.innerHTML = `
-                <div class="relative h-64 sm:h-80 overflow-hidden">
-                    <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover">
-                    <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
-                        <span class="inline-block px-2 py-1 bg-amber-500 text-white text-[10px] font-bold uppercase tracking-tighter rounded mb-2">${item.category}</span>
-                        <h2 class="text-3xl font-serif text-white">${item.name}</h2>
-                    </div>
-                </div>
-                <div class="p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <span class="text-2xl font-bold text-amber-700">${item.price}</span>
-                        <div class="flex space-x-4 text-stone-400">
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-fire text-xs"></i>
-                                <span class="text-[10px] mt-1 uppercase">${item.calories}</span>
-                            </div>
-                            <div class="flex flex-col items-center">
-                                <i class="fas fa-leaf text-xs"></i>
-                                <span class="text-[10px] mt-1 uppercase">Fresco</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mb-8">
-                        <h4 class="text-sm font-semibold uppercase tracking-widest text-stone-400 mb-3 italic">Historia del plato</h4>
-                        <p class="text-stone-600 leading-relaxed text-lg font-light">
-                            ${item.details}
-                        </p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-widest text-stone-800 mb-4 border-b pb-2">Ingredientes Clave</h4>
-                            <ul class="space-y-2">
-                                ${item.ingredients.map(ing => `
-                                    <li class="text-sm text-stone-500 flex items-center">
-                                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full mr-3"></span>
-                                        ${ing}
-                                    </li>
-                                `).join('')}
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 class="text-xs font-bold uppercase tracking-widest text-stone-800 mb-4 border-b pb-2">Alérgenos</h4>
-                            <div class="flex flex-wrap gap-3">
-                                <div class="bg-stone-100 p-2 rounded-lg text-stone-400 hover:text-amber-600 transition-colors cursor-help" title="Contiene Gluten">
-                                    <i class="fas fa-wheat-awn"></i>
-                                </div>
-                                <div class="bg-stone-100 p-2 rounded-lg text-stone-400 hover:text-amber-600 transition-colors cursor-help" title="Contiene Lácteos">
-                                    <i class="fas fa-cow"></i>
-                                </div>
-                                <div class="bg-stone-100 p-2 rounded-lg text-stone-400 hover:text-green-600 transition-colors cursor-help" title="Natural">
-                                    <i class="fas fa-seedling"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    const isAvailable = disponible.toUpperCase() === 'SI';
                     
-                    <button onclick="closeModal()" class="w-full mt-10 bg-stone-900 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-stone-800 transition-colors">
-                        Regresar al Menú
-                    </button>
-                </div>
-            `;
+                    const platoHtml = `
+                        <div class="plato ${!isAvailable ? 'agotado' : ''}">
+                            ${fotoUrl ? `<img src="${fotoUrl}" class="foto-plato" alt="${nombre}">` : '<div class="foto-plato" style="background:#ddd"></div>'}
+                            <div class="info-plato">
+                                <div class="nombre-plato">
+                                    ${nombre}
+                                    ${!isAvailable ? '<span class="status-badge">AGOTADO</span>' : ''}
+                                    <span class="precio-plato">$${precio}</span>
+                                </div>
+                                <div class="descripcion-plato">${descripcion}</div>
+                            </div>
+                        </div>
+                    `;
+                    container.insertAdjacentHTML('beforeend', platoHtml);
+                });
 
-            modal.classList.remove('modal-hidden');
-            document.body.style.overflow = 'hidden';
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('menu-content').innerHTML = 'Hubo un problema al cargar el menú. Por favor, reintenta en unos momentos.';
+            }
         }
 
-        function closeModal() {
-            const modal = document.getElementById('detail-modal');
-            modal.classList.add('modal-hidden');
-            document.body.style.overflow = '';
-        }
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeModal();
-        });
-
-        window.onload = () => filterMenu('principales');
+        initMenu();
     </script>
 </body>
 </html>
