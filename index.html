@@ -1,439 +1,524 @@
 <!DOCTYPE html>
+
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fogón Nahuelbuta - Menú Digital</title>
-    <!-- Fuentes Elegantes -->
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@300;400;600;900&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --bg-color: #1a1614; /* Madera oscura / Carbón */
-            --card-bg: #25201d;
-            --orange-fogon: #f05a28;
-            --green-araucaria: #2d5a27;
-            --text-main: #f4f1ea;
-            --text-muted: #a8a29e;
-        }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 Miggas - Menú</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            -webkit-tap-highlight-color: transparent;
-        }
+<style>
 
-        /* Header y Logo */
-        header {
-            padding: 40px 20px 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            background: linear-gradient(to bottom, #25201d, var(--bg-color));
-        }
+:root{
+  --bg:#f6f1e7;
+  --card:#ffffff;
+  --accent:#7a2e2e;
+  --accent-soft:#a44a4a;
+  --text:#3b2f2f;
+  --muted:#8b7e7e;
+}
 
-        .logo-container {
-            width: 180px;
-            margin-bottom: 15px;
-        }
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
 
-        .logo-container img {
-            width: 100%;
-            height: auto;
-            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
-        }
+body{
+  font-family:Inter;
+  background:var(--bg);
+  color:var(--text);
+}
 
-        .slogan {
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: var(--text-muted);
-            font-weight: 300;
-        }
+#splash{
+  position:fixed;
+  inset:0;
+  background:#f6f1e7;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  z-index:9999;
+  transition:opacity 0.8s ease;
+}
 
-        .divider {
-            width: 60px;
-            height: 2px;
-            background: var(--orange-fogon);
-            margin: 15px 0;
-        }
+#splash.oculto{
+  opacity:0;
+  pointer-events:none;
+}
 
-        /* Filtros */
-        .sticky-nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(26, 22, 20, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            padding: 15px 0;
-            overflow-x: auto;
-            white-space: nowrap;
-            scrollbar-width: none;
-        }
+.splash-title{
+  font-family:"Playfair Display";
+  font-size:36px;
+  font-weight:600;
+  color:var(--accent);
+  letter-spacing:6px;
+  margin-bottom:6px;
+}
 
-        .sticky-nav::-webkit-scrollbar { display: none; }
+.splash-sub{
+  font-family:Inter;
+  font-size:11px;
+  font-weight:400;
+  color:var(--muted);
+  letter-spacing:4px;
+  text-transform:uppercase;
+  margin-bottom:36px;
+}
 
-        .filter-container {
-            display: flex;
-            gap: 10px;
-            padding: 0 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+.splash-spinner{
+  width:34px;
+  height:34px;
+  border:2px solid #ddd;
+  border-top:2px solid var(--accent);
+  border-right:2px solid var(--accent-soft);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+}
 
-        .filter-btn {
-            background: var(--card-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: var(--text-muted);
-            padding: 8px 20px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+@keyframes spin{
+  to{ transform:rotate(360deg); }
+}
 
-        .filter-btn.active {
-            background: var(--orange-fogon);
-            border-color: var(--orange-fogon);
-            color: white;
-            box-shadow: 0 4px 15px rgba(240, 90, 40, 0.3);
-        }
+header{
+  padding:30px 20px 10px;
+  text-align:center;
+}
 
-        /* Menú Grid */
-        main {
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 0 20px 80px;
-        }
+.logo{
+  display:block;
+  margin:auto;
+  width:280px;
+  margin-bottom:15px;
+}
 
-        .grid-menu {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-        }
+@media(min-width:700px){
+  .logo{ width:360px; }
+}
 
-        @media (min-width: 768px) {
-            .grid-menu { grid-template-columns: 1fr 1fr; }
-        }
+.search-box{
+  max-width:900px;
+  margin:0 auto 20px auto;
+  padding:0 20px;
+}
 
-        /* Tarjeta de Plato */
-        .plato-card {
-            background: var(--card-bg);
-            border-radius: 16px;
-            overflow: hidden;
-            display: flex;
-            border: 1px solid rgba(255,255,255,0.03);
-            transition: transform 0.3s ease;
-        }
+.search-box input{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #ddd;
+  font-size:14px;
+  background:#fff;
+  color:var(--text);
+}
 
-        .plato-card.agotado {
-            opacity: 0.5;
-            filter: grayscale(0.8);
-        }
+.search-box input::placeholder{ color:#bbb; }
 
-        .plato-img {
-            width: 120px;
-            min-height: 120px;
-            background: #111;
-            flex-shrink: 0;
-            position: relative;
-        }
+.category-bar{
+  max-width:900px;
+  margin:auto;
+  display:flex;
+  overflow-x:auto;
+  gap:10px;
+  padding:10px 20px;
+}
 
-        .plato-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
+.cat-btn{
+  background:white;
+  border:1px solid #ddd;
+  padding:6px 14px;
+  border-radius:20px;
+  cursor:pointer;
+  font-size:12px;
+  white-space:nowrap;
+  color:var(--text);
+  transition:0.25s;
+}
 
-        .plato-info {
-            padding: 15px;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
+.cat-btn:hover{
+  border:1px solid var(--accent);
+}
 
-        .plato-header h3 {
-            font-family: 'Playfair Display', serif;
-            font-size: 17px;
-            margin-bottom: 5px;
-            color: var(--text-main);
-        }
+.cat-btn.active{
+  background:var(--accent);
+  color:white;
+  border:none;
+}
 
-        .plato-desc {
-            font-size: 11px;
-            color: var(--text-muted);
-            font-weight: 300;
-            margin-bottom: 10px;
-            display: -webkit-box;
-            -webkit-line-clamp: 3;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
+.menu{
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:16px;
+}
 
-        .plato-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+@media(min-width:700px){
+  .menu{ grid-template-columns:1fr 1fr; }
+}
 
-        .precio {
-            color: var(--orange-fogon);
-            font-weight: 900;
-            font-size: 18px;
-        }
+.card{
+  display:flex;
+  align-items:center;
+  background:var(--card);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 4px 10px rgba(0,0,0,0.06);
+  position:relative;
+  border:1px solid #ece5d8;
+  transition:0.2s;
+}
 
-        .badge-cat {
-            font-size: 8px;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: var(--green-araucaria);
-            background: rgba(45, 90, 39, 0.15);
-            padding: 2px 8px;
-            border-radius: 4px;
-            border: 1px solid rgba(45, 90, 39, 0.3);
-        }
+.card:hover{
+  border:1px solid rgba(122,46,46,0.35);
+  transform:scale(1.01);
+}
 
-        .agotado-overlay {
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+.agotado{
+  opacity:0.45;
+  filter:grayscale(0.9);
+}
 
-        .agotado-tag {
-            color: #ff4757;
-            border: 1px solid #ff4757;
-            padding: 2px 6px;
-            font-size: 9px;
-            font-weight: 900;
-            text-transform: uppercase;
-            border-radius: 2px;
-        }
+.agotado::after{
+  content:"AGOTADO";
+  position:absolute;
+  top:8px;
+  right:8px;
+  background:var(--accent);
+  color:white;
+  font-size:9px;
+  padding:3px 6px;
+  border-radius:4px;
+}
 
-        /* Footer */
-        footer {
-            padding: 60px 20px;
-            text-align: center;
-            background: #0d0a09;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
+.img{
+  width:120px;
+  height:120px;
+  background:#eee;
+  flex-shrink:0;
+  align-self:stretch;
+}
 
-        .footer-logo {
-            width: 80px;
-            opacity: 0.3;
-            margin-bottom: 20px;
-        }
+.img img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
 
-        .footer-info {
-            font-size: 11px;
-            color: var(--text-muted);
-            letter-spacing: 1px;
-        }
+.info{
+  padding:12px;
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-width:0;
+}
 
-        /* Loading */
-        #loader {
-            position: fixed;
-            inset: 0;
-            background: var(--bg-color);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
+.title{
+  font-family:"Playfair Display";
+  font-size:16px;
+  margin-bottom:4px;
+}
 
-        .spinner {
-            width: 40px;
-            height: 40px;
-            border: 3px solid rgba(240, 90, 40, 0.1);
-            border-top-color: var(--orange-fogon);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+.desc{
+  font-size:12px;
+  color:var(--muted);
+  margin-bottom:6px;
+  min-height:16px;
+}
 
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+.adicionales{
+  font-size:11px;
+  color:var(--muted);
+  margin-bottom:8px;
+  line-height:1.4;
+}
+
+.adicionales-label{
+  color:var(--accent);
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  margin-bottom:2px;
+}
+
+.bottom{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-end;
+  gap:4px;
+}
+
+.price{
+  font-weight:700;
+  font-size:14px;
+  color:var(--accent);
+  white-space:nowrap;
+}
+
+.badge{
+  font-size:10px;
+  background:#eee;
+  padding:3px 8px;
+  border-radius:6px;
+  color:var(--text);
+  white-space:nowrap;
+}
+
+.precios{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  align-items:flex-end;
+}
+
+.precio-fila{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+
+.precio-label{
+  font-size:10px;
+  color:var(--muted);
+  white-space:nowrap;
+}
+
+.precio-valor{
+  font-weight:700;
+  font-size:13px;
+  color:var(--accent);
+  white-space:nowrap;
+}
+
+footer{
+  text-align:center;
+  padding:40px 20px;
+  color:var(--muted);
+  font-size:12px;
+}
+
+.creativo-link{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  margin-top:25px;
+  text-decoration:none;
+  transition:0.3s;
+}
+
+.creativo-link:hover{ opacity:0.7; }
+
+.creativo-logo{
+  width:55px;
+  border-radius:6px;
+  margin-bottom:6px;
+}
+
+.creativo-text{
+  font-size:10px;
+  letter-spacing:2px;
+  color:var(--accent);
+  font-weight:600;
+  text-transform:uppercase;
+}
+
+</style>
 </head>
+
 <body>
 
-    <div id="loader">
-        <div class="spinner"></div>
-        <p style="margin-top: 20px; font-size: 10px; letter-spacing: 3px; color: var(--orange-fogon);">CARGANDO FOGÓN...</p>
+<div id="splash">
+  <div class="splash-title">4 MIGGAS</div>
+  <div class="splash-sub">Restaurante</div>
+  <div class="splash-spinner"></div>
+</div>
+
+<header>
+  <img src="logo.png" class="logo">
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Buscar en el menú...">
+  </div>
+</header>
+
+<div class="category-bar" id="cats"></div>
+<div class="menu" id="menu"></div>
+
+<footer>
+  CURANILAHUE · CHILE
+  <a href="https://www.instagram.com/newenbiobiodigital?igsh=dGZnY2JyMGVydDVq" target="_blank" class="creativo-link">
+    <img src="creativo.png" class="creativo-logo">
+    <span class="creativo-text">Desarrollado por CREATIVO</span>
+  </a>
+</footer>
+
+<script>
+
+const SHEET_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vRKndmjX1CcpICAtCKFwhPwomV8wbnPNgl_s2Bo9rHv9Y4Gq0UPU-tG_XqjCmP2671jzn6QnrdRtYwe/pub?gid=0&single=true&output=csv";
+
+let items=[];
+let menuListo=false;
+let tiempoMinimoCumplido=false;
+
+function intentarOcultarSplash(){
+  if(menuListo && tiempoMinimoCumplido){
+    document.getElementById("splash").classList.add("oculto");
+  }
+}
+
+function parsearFila(row){
+  const cols=[];
+  let actual="";
+  let entreComillas=false;
+  for(let i=0;i<row.length;i++){
+    const c=row[i];
+    if(c==='"'){ entreComillas=!entreComillas; continue; }
+    if(c===',' && !entreComillas){ cols.push(actual.trim()); actual=""; continue; }
+    actual+=c;
+  }
+  cols.push(actual.trim());
+  return cols;
+}
+
+async function load(){
+  setTimeout(()=>{
+    tiempoMinimoCumplido=true;
+    intentarOcultarSplash();
+  },1800);
+
+  try{
+    const url=SHEET_URL+"&t="+Date.now();
+    const r=await fetch(url);
+    if(!r.ok) throw new Error("HTTP "+r.status);
+    const t=await r.text();
+    const rows=t.split(/\r?\n/).slice(1);
+    items=rows.map(row=>{
+      try{
+        if(!row.trim()) return null;
+        const clean=parsearFila(row);
+        if(clean.length<4) return null;
+        return{
+          cat:        clean[0]||"Otros",
+          name:       clean[1]||"",
+          desc:       clean[2]||"",
+          price:      clean[3]||"0",
+          stock:      clean[4]||"SI",
+          img:        clean[5]||"",
+          etiqueta1:  clean[6]||"",
+          precio1:    clean[7]||"",
+          etiqueta2:  clean[8]||"",
+          precio2:    clean[9]||"",
+          adicionales:clean[10]||""
+        };
+      }catch{
+        return null;
+      }
+    }).filter(Boolean);
+    renderCats();
+    renderMenu("Todo");
+  }catch(e){
+    console.error(e);
+    document.getElementById("menu").innerHTML=
+      '<div style="text-align:center;padding:60px 20px;color:#8b7e7e">Error al cargar el menú.<br><br>'+
+      '<button onclick="location.reload()" style="background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px">Reintentar</button></div>';
+  }finally{
+    menuListo=true;
+    intentarOcultarSplash();
+  }
+}
+
+function renderCats(){
+  const cats=[...new Set(items.map(i=>i.cat))];
+  const container=document.getElementById("cats");
+  container.innerHTML="";
+  const all=["Todo",...cats];
+  all.forEach(c=>{
+    const count=c==="Todo"?items.length:items.filter(i=>i.cat===c).length;
+    const btn=document.createElement("button");
+    btn.className="cat-btn";
+    btn.innerText=c+" ("+count+")";
+    btn.onclick=()=>{
+      document.querySelectorAll(".cat-btn").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderMenu(c);
+    };
+    container.appendChild(btn);
+  });
+  container.firstChild.classList.add("active");
+}
+
+function renderPrecio(i){
+  if(i.etiqueta1){
+    return`
+      <div class="precios">
+        <div class="precio-fila">
+          <span class="precio-label">${i.etiqueta1}</span>
+          <span class="precio-valor">$ ${Number(i.precio1).toLocaleString("es-CL")}</span>
+        </div>
+        ${i.etiqueta2?`
+        <div class="precio-fila">
+          <span class="precio-label">${i.etiqueta2}</span>
+          <span class="precio-valor">$ ${Number(i.precio2).toLocaleString("es-CL")}</span>
+        </div>`:""}
+      </div>
+    `;
+  }
+  return`<div class="price">$ ${Number(i.price).toLocaleString("es-CL")}</div>`;
+}
+
+function renderMenu(cat){
+  const container=document.getElementById("menu");
+  let filtered=cat==="Todo"?items:items.filter(i=>i.cat===cat);
+  const q=document.getElementById("search").value.toLowerCase();
+  if(q){
+    filtered=filtered.filter(i=>
+      i.name.toLowerCase().includes(q)||
+      i.desc.toLowerCase().includes(q)
+    );
+  }
+
+  filtered.sort((a,b)=>{
+    const aOff=a.stock?.toUpperCase()==="NO"?1:0;
+    const bOff=b.stock?.toUpperCase()==="NO"?1:0;
+    return aOff-bOff;
+  });
+
+  container.innerHTML=filtered.map(i=>`
+    <div class="card ${i.stock?.toUpperCase()==="NO"?"agotado":""}">
+      <div class="img">
+        ${i.img?`<img src="${i.img}">`:""}
+      </div>
+      <div class="info">
+        <div>
+          <div class="title">${i.name}</div>
+          <div class="desc">${i.desc||""}</div>
+          ${i.adicionales?`
+          <div class="adicionales">
+            <div class="adicionales-label">Adicionales</div>
+            ${i.adicionales}
+          </div>`:""}
+        </div>
+        <div class="bottom">
+          ${renderPrecio(i)}
+          <div class="badge">${i.cat}</div>
+        </div>
+      </div>
     </div>
+  `).join("");
+}
 
-    <header>
-        <div class="logo-container">
-            <img src="logo fogon pub 2.png" alt="Fogón Nahuelbuta Logo" onerror="this.style.display='none'">
-        </div>
-        <div class="divider"></div>
-        <p class="slogan">Sabor del campo chileno</p>
-    </header>
+document.getElementById("search").addEventListener("input",()=>{
+  const active=document.querySelector(".cat-btn.active");
+  renderMenu(active?active.innerText.split(" (")[0]:"Todo");
+});
 
-    <nav class="sticky-nav">
-        <div class="filter-container" id="category-filters">
-            <!-- Los filtros se cargarán aquí -->
-        </div>
-    </nav>
+load();
 
-    <main>
-        <div class="grid-menu" id="menu-items">
-            <!-- Los platos se cargarán aquí -->
-        </div>
-    </main>
+</script>
 
-    <footer>
-        <img src="logo fogon pub 2.png" class="footer-logo" alt="Logo">
-        <p class="footer-info">CURANILAHUE · CHILE</p>
-        <p style="font-size: 9px; margin-top: 10px; opacity: 0.4;">DISEÑO & FOTOGRAFÍA GASTRONÓMICA</p>
-    </footer>
-
-    <script>
-        const SHEET_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRgQ-ZRf2h64mfosx951LpKzVI5lIPAOuyb9ocFupCv7PycFK6tfY4tzWoBOOTmBluSXVmgH86YumWY/pub?gid=0&single=true&output=csv';
-        
-        let allItems = [];
-
-        function formatCLP(val) {
-            if (!val) return '$ 0';
-            const num = parseInt(val.toString().replace(/\D/g, ''));
-            if (isNaN(num)) return `$ ${val}`;
-            return `$ ${num.toLocaleString('es-CL')}`;
-        }
-
-        // Función robusta para parsear CSV
-        function parseCSV(text) {
-            const rows = [];
-            let currentRow = [];
-            let currentField = '';
-            let inQuotes = false;
-
-            for (let i = 0; i < text.length; i++) {
-                const char = text[i];
-                const nextChar = text[i + 1];
-
-                if (inQuotes) {
-                    if (char === '"' && nextChar === '"') {
-                        currentField += '"';
-                        i++;
-                    } else if (char === '"') {
-                        inQuotes = false;
-                    } else {
-                        currentField += char;
-                    }
-                } else {
-                    if (char === '"') {
-                        inQuotes = true;
-                    } else if (char === ',') {
-                        currentRow.push(currentField);
-                        currentField = '';
-                    } else if (char === '\r' || char === '\n') {
-                        currentRow.push(currentField);
-                        if (currentRow.length > 1 || currentRow[0] !== '') {
-                            rows.push(currentRow);
-                        }
-                        currentRow = [];
-                        currentField = '';
-                        if (char === '\r' && nextChar === '\n') i++;
-                    } else {
-                        currentField += char;
-                    }
-                }
-            }
-            if (currentRow.length > 0 || currentField !== '') {
-                currentRow.push(currentField);
-                rows.push(currentRow);
-            }
-            return rows;
-        }
-
-        async function loadData() {
-            try {
-                const response = await fetch(SHEET_URL);
-                const data = await response.text();
-                
-                const parsedRows = parseCSV(data);
-                const dataRows = parsedRows.slice(1); // Omitir encabezado
-
-                allItems = dataRows.map(columns => {
-                    // Si la fila está vacía o tiene menos de 2 columnas útiles, la ignoramos
-                    if (!columns || columns.length < 2 || !columns[1]) return null;
-                    
-                    return {
-                        categoria: (columns[0] || 'Otros').trim(),
-                        nombre: (columns[1] || 'Sin nombre').trim(),
-                        descripcion: (columns[2] || '').trim(),
-                        precio: (columns[3] || '0').trim(),
-                        disponible: (columns[4] || 'SI').trim().toUpperCase() === 'SI',
-                        imagen: (columns[5] || '').trim()
-                    };
-                }).filter(i => i !== null);
-
-                renderFilters();
-                renderMenu('Todo');
-                document.getElementById('loader').style.display = 'none';
-
-            } catch (error) {
-                console.error("Error cargando el menú:", error);
-                document.getElementById('loader').innerHTML = "<p>Error al conectar con la carta.</p>";
-            }
-        }
-
-        function renderFilters() {
-            const container = document.getElementById('category-filters');
-            const rawCats = [...new Set(allItems.map(i => i.categoria))];
-            
-            const priority = ['Carnes', 'Tablas', 'Sandwich'];
-            const others = rawCats.filter(c => !priority.includes(c)).sort();
-            const finalCats = ['Todo', ...priority.filter(p => rawCats.includes(p)), ...others];
-
-            container.innerHTML = finalCats.map(cat => `
-                <button class="filter-btn ${cat === 'Todo' ? 'active' : ''}" onclick="filterBy('${cat}', this)">
-                    ${cat}
-                </button>
-            `).join('');
-        }
-
-        function filterBy(cat, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            renderMenu(cat);
-            window.scrollTo({ top: document.querySelector('header').offsetHeight - 20, behavior: 'smooth' });
-        }
-
-        function renderMenu(cat) {
-            const container = document.getElementById('menu-items');
-            const filtered = cat === 'Todo' ? allItems : allItems.filter(i => i.categoria === cat);
-
-            container.innerHTML = filtered.map(item => `
-                <div class="plato-card ${!item.disponible ? 'agotado' : ''}">
-                    <div class="plato-img">
-                        ${item.imagen ? `<img src="${item.imagen}" alt="${item.nombre}" onerror="this.parentElement.innerHTML='<div style=\'height:100%; width:100%; display:flex; align-items:center; justify-content:center; opacity:0.1\'>🍽️</div>'">` : '<div style="height:100%; width:100%; display:flex; align-items:center; justify-content:center; opacity:0.1">🍽️</div>'}
-                        ${!item.disponible ? '<div class="agotado-overlay"><span class="agotado-tag">Agotado</span></div>' : ''}
-                    </div>
-                    <div class="plato-info">
-                        <div class="plato-header">
-                            <h3>${item.nombre}</h3>
-                            <p class="plato-desc">${item.descripcion}</p>
-                        </div>
-                        <div class="plato-footer">
-                            <span class="precio">${formatCLP(item.precio)}</span>
-                            <span class="badge-cat">${item.categoria}</span>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        window.onload = loadData;
-    </script>
 </body>
 </html>
