@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 Miggas — Cocina</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1410;
+  --surface: #2a1f1a;
+  --surface2: #3a2d25;
+  --accent: #e8a04a;
+  --accent2: #c47830;
+  --green: #4caf6a;
+  --green-dark: #2d7a45;
+  --orange: #f07030;
+  --red: #e04040;
+  --text: #f0e8d8;
+  --muted: #9a8878;
+  --border: #4a3828;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Inter, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-title { font-family: "Playfair Display"; font-size: 22px; color: var(--accent); letter-spacing: 3px; }
+.topbar-right { display: flex; align-items: center; gap: 16px; }
+.estado-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); animation: pulso 2s infinite; flex-shrink: 0; }
+.estado-dot.error { background: var(--red); animation: none; }
+@keyframes pulso { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.estado-texto { font-size: 12px; color: var(--muted); }
+.contador-badge { background: var(--orange); color: #fff; font-size: 13px; font-weight: 700; padding: 4px 12px; border-radius: 20px; min-width: 36px; text-align: center; }
+.contador-badge.vacio { background: var(--surface2); color: var(--muted); }
+
+.filtros { display: flex; gap: 8px; padding: 14px 24px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+.filtro-btn { padding: 6px 16px; border-radius: 20px; border: 1px solid var(--border); background: none; color: var(--muted); font-size: 12px; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+.filtro-btn:hover { border-color: var(--accent); color: var(--accent); }
+.filtro-btn.active { background: var(--accent2); color: var(--text); border-color: var(--accent2); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; padding: 20px 24px; }
+
+.card { background: var(--surface); border-radius: 14px; border: 2px solid var(--border); overflow: hidden; display: flex; flex-direction: column; transition: transform 0.2s, border-color 0.2s; animation: aparecer 0.4s ease; }
+.card:hover { transform: translateY(-2px); }
+.card.en-proceso { border-color: var(--orange); }
+.card.listo-anim { animation: desaparecer 0.5s ease forwards; }
+@keyframes aparecer { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+@keyframes desaparecer { from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(0.9)} }
+
+.card-header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.mesa-tag { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 1px; }
+.hora-tag { font-size: 11px; color: var(--muted); }
+.estado-tag { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 20px; letter-spacing: 0.5px; text-transform: uppercase; }
+.estado-tag.PENDIENTE  { background: rgba(240,112,48,0.18); color: var(--orange); border: 1px solid rgba(240,112,48,0.4); }
+.estado-tag.EN_PROCESO { background: rgba(255,200,0,0.15);  color: #f0c040;       border: 1px solid rgba(255,200,0,0.4); }
+
+.card-body { padding: 14px 16px; flex: 1; }
+.plato-nombre { font-family: "Playfair Display"; font-size: 18px; color: var(--text); margin-bottom: 4px; }
+.plato-qty { display: inline-block; background: var(--surface2); color: var(--accent); font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 20px; margin-bottom: 10px; }
+.plato-nota { font-size: 12px; color: var(--orange); background: rgba(240,112,48,0.1); border-left: 3px solid var(--orange); padding: 6px 10px; border-radius: 0 6px 6px 0; margin-top: 8px; line-height: 1.4; }
+.plato-nota::before { content: "📝 "; }
+
+.card-footer { display: flex; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); }
+.btn { flex: 1; padding: 10px 8px; border-radius: 10px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; transition: 0.2s; letter-spacing: 0.3px; }
+.btn-proceso { background: rgba(255,200,0,0.15); color: #f0c040; border: 1px solid rgba(255,200,0,0.35); }
+.btn-proceso:hover { background: rgba(255,200,0,0.28); }
+.btn-listo { background: var(--green-dark); color: #fff; }
+.btn-listo:hover { background: var(--green); }
+.btn-cancelar { background: rgba(224,64,64,0.15); color: var(--red); border: 1px solid rgba(224,64,64,0.3); flex: 0.5; }
+.btn-cancelar:hover { background: rgba(224,64,64,0.28); }
+
+.timer { font-size: 11px; color: var(--muted); margin-top: 8px; }
+.timer.urgente { color: var(--red); font-weight: 700; animation: parpadeo 1s infinite; }
+@keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+#vacio { display: none; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; color: var(--muted); text-align: center; }
+#vacio .icono { font-size: 56px; margin-bottom: 16px; opacity: 0.5; }
+#vacio .titulo { font-family: "Playfair Display"; font-size: 22px; color: var(--muted); margin-bottom: 8px; }
+#vacio .sub { font-size: 13px; line-height: 1.6; }
+
+.sound-btn { background: none; border: 1px solid var(--border); color: var(--muted); padding: 6px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+.sound-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.refresh-bar { height: 3px; background: var(--border); position: relative; overflow: hidden; }
+.refresh-progress { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent2); transition: width linear; }
+
+#toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); color: var(--text); border: 1px solid var(--border); padding: 12px 24px; border-radius: 12px; font-size: 14px; opacity: 0; transition: all 0.3s; z-index: 999; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">4 MIGGAS · COCINA</div>
+  <div class="topbar-right">
+    <button class="sound-btn" id="sound-btn" onclick="toggleSonido()">🔔 Sonido</button>
+    <span class="estado-texto" id="estado-texto">Conectando...</span>
+    <div class="estado-dot" id="estado-dot"></div>
+    <div class="contador-badge vacio" id="contador">0</div>
+  </div>
+</div>
+
+<div class="refresh-bar"><div class="refresh-progress" id="refresh-progress"></div></div>
+
+<div class="filtros">
+  <button class="filtro-btn active" onclick="setFiltro('todos', this)">Todos</button>
+  <button class="filtro-btn" onclick="setFiltro('PENDIENTE', this)">Solo pendientes</button>
+  <button class="filtro-btn" onclick="setFiltro('EN_PROCESO', this)">En proceso</button>
+</div>
+
+<div class="grid" id="grid"></div>
+<div id="vacio">
+  <div class="icono">🍽️</div>
+  <div class="titulo">Sin pedidos pendientes</div>
+  <div class="sub">Cuando el mesero envíe un pedido<br>aparecerá aquí automáticamente</div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwldpvMOP7-KgPj-cQRnq3BBk61-jB0rX9tnxgCS_qr8M_gJtnriE2MLQ0uO1OnOee-/exec";
+
+const INTERVALO_MS  = 6000;
+let pedidosActuales = [];
+let filtroActivo    = "todos";
+let sonidoActivo    = true;
+let ultimoConteo    = 0;
+
+function beep() {
+  if (!sonidoActivo) return;
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function toggleSonido() {
+  sonidoActivo = !sonidoActivo;
+  document.getElementById("sound-btn").textContent = sonidoActivo ? "🔔 Sonido" : "🔕 Silencio";
+  mostrarToast(sonidoActivo ? "Sonido activado" : "Sonido silenciado");
+}
+
+async function fetchPedidos() {
+  try {
+    const url = SCRIPT_URL + "?accion=listar&t=" + Date.now();
+    const r   = await fetch(url);
+    const d   = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    return d.pedidos;
+  } catch(e) {
+    setEstado("error");
+    console.error(e);
+    return null;
+  }
+}
+
+async function loop() {
+  const pedidos = await fetchPedidos();
+  if (pedidos === null) return;
+
+  const nuevoConteo = pedidos.length;
+  if (nuevoConteo > ultimoConteo && ultimoConteo > 0) {
+    beep();
+    mostrarToast("🆕 Nuevo pedido — Mesa " + (pedidos[0]?.mesa || ""));
+  }
+  ultimoConteo    = nuevoConteo;
+  pedidosActuales = pedidos;
+  renderGrid();
+  setEstado("ok");
+  animarProgress();
+}
+
+function renderGrid() {
+  const grid  = document.getElementById("grid");
+  const vacio = document.getElementById("vacio");
+  const ctr   = document.getElementById("contador");
+
+  let filtrados = filtroActivo === "todos"
+    ? pedidosActuales
+    : pedidosActuales.filter(p => p.estado === filtroActivo);
+
+  ctr.textContent = pedidosActuales.length;
+  ctr.className   = "contador-badge" + (pedidosActuales.length === 0 ? " vacio" : "");
+
+  if (filtrados.length === 0) {
+    grid.innerHTML      = "";
+    vacio.style.display = "flex";
+    return;
+  }
+  vacio.style.display = "none";
+
+  grid.innerHTML = filtrados.map(p => {
+    const min     = Math.floor((Date.now() - new Date(p.timestamp)) / 60000);
+    const urgente = min >= 15;
+    const esProceso = p.estado === "EN_PROCESO";
+    return `
+    <div class="card ${esProceso ? "en-proceso" : ""}" id="card-${p.fila}">
+      <div class="card-header">
+        <div>
+          <div class="mesa-tag">Mesa ${p.mesa}</div>
+          <div class="hora-tag">Pedido a las ${p.hora}</div>
+        </div>
+        <div class="estado-tag ${p.estado}">${esProceso ? "En proceso" : "Pendiente"}</div>
+      </div>
+      <div class="card-body">
+        <div class="plato-nombre">${p.plato}</div>
+        <span class="plato-qty">× ${p.cantidad}</span>
+        ${p.nota ? `<div class="plato-nota">${p.nota}</div>` : ""}
+        <div class="timer ${urgente ? "urgente" : ""}">⏱ ${min} min esperando${urgente ? " — ¡URGENTE!" : ""}</div>
+      </div>
+      <div class="card-footer">
+        ${esProceso
+          ? `<button class="btn btn-proceso" onclick="marcar(${p.fila},'PENDIENTE')">↩ Pendiente</button>`
+          : `<button class="btn btn-proceso" onclick="marcar(${p.fila},'EN_PROCESO')">🔥 En proceso</button>`
+        }
+        <button class="btn btn-listo"    onclick="marcar(${p.fila},'LISTO')">✓ Listo</button>
+        <button class="btn btn-cancelar" onclick="marcar(${p.fila},'CANCELADO')">✕</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+async function marcar(fila, estado) {
+  const card = document.getElementById("card-" + fila);
+  if ((estado === "LISTO" || estado === "CANCELADO") && card) card.classList.add("listo-anim");
+
+  try {
+    const url = SCRIPT_URL + "?accion=marcar&fila=" + fila + "&estado=" + estado;
+    const r   = await fetch(url);
+    const d   = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    mostrarToast({ LISTO:"✓ Plato listo", EN_PROCESO:"🔥 En preparación", PENDIENTE:"↩ Vuelto a pendiente", CANCELADO:"✕ Cancelado" }[estado] || "");
+    setTimeout(loop, 600);
+  } catch(e) {
+    mostrarToast("Error al actualizar");
+    console.error(e);
+    if (card) card.classList.remove("listo-anim");
+  }
+}
+
+function setFiltro(f, btn) {
+  filtroActivo = f;
+  document.querySelectorAll(".filtro-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderGrid();
+}
+
+function setEstado(tipo) {
+  const dot = document.getElementById("estado-dot");
+  const txt = document.getElementById("estado-texto");
+  if (tipo === "ok") {
+    dot.className   = "estado-dot";
+    txt.textContent = "En vivo · " + new Date().toLocaleTimeString("es-CL", { hour:"2-digit", minute:"2-digit" });
+  } else {
+    dot.className   = "estado-dot error";
+    txt.textContent = "Sin conexión";
+  }
+}
+
+function animarProgress() {
+  const bar = document.getElementById("refresh-progress");
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+  setTimeout(() => {
+    bar.style.transition = `width ${INTERVALO_MS}ms linear`;
+    bar.style.width = "100%";
+  }, 50);
+}
+
+function mostrarToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+loop();
+setInterval(loop, INTERVALO_MS);
+</script>
+</body>
+</html>
