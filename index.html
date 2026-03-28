@@ -5,55 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Make Your Burger - Menú Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #000; color: white; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; margin: 0; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #111; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        // Extraemos los iconos globalmente
         const { Plus, X, ChevronRight, Utensils, Coffee, Flame, Salad, ClipboardList, MapPin, CheckCircle2, Info, Minus, Loader2, AlertCircle } = lucide;
 
-        // TU URL DE GOOGLE SHEETS
         const API_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4yZc7M7meCPQ6Mc0WmYpw08NceifjZ2ccaXCgCImrOePe46mgGKnAdaeLVVf6Zu2PfMUpO7NYJ7tD/pub?gid=0&single=true&output=csv";
 
-        const INGREDIENTS = ['Champiñón', 'Palta', 'Tomate', 'Tocino', 'Cheddar', 'Lechuga', 'Choclo', 'Camarón', 'Cebolla Morada', 'Pepinillos', 'Huevo', 'Queso Philadelphia', 'Cebolla Caramelizada', 'Salame', 'Palmitos'];
-        const BOWL_BASES = ['Arroz', 'Choclo', 'Quinoa', 'Lechuga', 'Espirales'];
-        const BOWL_PROTEINS = ['Camarón', 'Carne', 'Pollo', 'Salmón', 'Huevo'];
+        // Función para limpiar nombres de columnas (quita tildes, espacios y símbolos)
+        const cleanKey = (str) => {
+            return str.toLowerCase()
+                .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+                .replace(/[^a-z0-9]/gi, '').trim();
+        };
 
         const formatPrice = (p) => `$${(Number(p) || 0).toLocaleString('es-CL')}`;
-
-        // PROCESADOR DE CSV ROBUSTO
-        const parseCSV = (csv) => {
-            const lines = csv.split(/\r?\n/).filter(l => l.trim() !== "");
-            if (lines.length < 2) return [];
-            
-            // Normalizamos encabezados para que no fallen por tildes o mayúsculas
-            const headers = lines[0].split(',').map(h => 
-                h.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '')
-            );
-            
-            return lines.slice(1).map(line => {
-                const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-                const obj = {};
-                headers.forEach((header, i) => {
-                    let val = values[i] ? values[i].trim().replace(/^"|"$/g, '') : "";
-                    obj[header] = val;
-                });
-                return obj;
-            });
-        };
 
         const App = () => {
             const [menu, setMenu] = React.useState(null);
@@ -67,99 +44,89 @@
             const [config, setConfig] = React.useState({ ingredients: [], base: '', protein: '', observations: '' });
 
             React.useEffect(() => {
-                fetch(API_URL)
-                    .then(res => res.text())
-                    .then(csv => {
-                        const raw = parseCSV(csv);
-                        const normalize = (txt) => (txt || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+                const loadData = async () => {
+                    try {
+                        const response = await fetch(API_URL);
+                        if (!response.ok) throw new Error("No se pudo conectar con Google Sheets.");
+                        const csvText = await response.text();
                         
+                        const lines = csvText.split(/\r?\n/).filter(l => l.trim() !== "");
+                        const rawHeaders = lines[0].split(',');
+                        const headers = rawHeaders.map(h => cleanKey(h));
+
+                        const jsonData = lines.slice(1).map(line => {
+                            // Split que respeta comas dentro de comillas
+                            const values = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
+                            const obj = {};
+                            headers.forEach((h, i) => {
+                                let val = values[i] ? values[i].trim().replace(/^"|"$/g, '') : "";
+                                obj[h] = val;
+                            });
+                            return obj;
+                        });
+
+                        const filterBy = (cat) => jsonData.filter(i => cleanKey(i.categoria || "") === cleanKey(cat));
+
                         setMenu({
-                            burgers: raw.filter(i => normalize(i.categoria) === 'burgers'),
-                            makebowl: raw.filter(i => normalize(i.categoria) === 'makebowl'),
-                            hotbowls: raw.filter(i => normalize(i.categoria) === 'hotbowls'),
-                            churrascos: raw.filter(i => normalize(i.categoria) === 'churrascos'),
-                            bebestibles: {
-                                calientes: raw.filter(i => normalize(i.categoria) === 'calientes'),
-                                frios: raw.filter(i => normalize(i.categoria) === 'frios'),
-                            }
+                            burgers: filterBy('burgers'),
+                            makebowl: filterBy('makebowl'),
+                            hotbowls: filterBy('hotbowls'),
+                            churrascos: filterBy('churrascos'),
+                            calientes: filterBy('calientes'),
+                            frios: filterBy('frios')
                         });
                         setLoading(false);
-                    })
-                    .catch(err => {
-                        setError("Error al cargar la planilla. Verifica que esté publicada como CSV.");
+                    } catch (err) {
+                        setError(err.message);
                         setLoading(false);
-                    });
+                    }
+                };
+                loadData();
             }, []);
 
-            const groupedCart = React.useMemo(() => {
-                const groups = [];
-                cart.forEach(item => {
-                    const key = JSON.stringify({ id: item.id, ing: [...item.config.ingredients].sort(), b: item.config.base, p: item.config.protein, obs: item.config.observations.trim().toLowerCase() });
-                    const match = groups.find(g => g.key === key);
-                    if (match) { match.qty += 1; match.total += item.finalPrice; }
-                    else { groups.push({ ...item, key, qty: 1, total: item.finalPrice }); }
-                });
-                return groups;
-            }, [cart]);
-
-            const handleAddToCart = () => {
-                let price = Number(selected.precio || 0);
-                const id = (selected.id || "").toLowerCase();
-                
+            const addToCart = () => {
+                let p = Number(selected.precio || 0);
+                const id = cleanKey(selected.id || "");
                 if (id.startsWith('b') || id === 's4' || id === 's5') {
-                    if (config.ingredients.length > 3) price += (config.ingredients.length - 3) * 1000;
+                    if (config.ingredients.length > 3) p += (config.ingredients.length - 3) * 1000;
                 } else if (id === 'bw1') {
-                    if (config.ingredients.length > 4) price += (config.ingredients.length - 4) * 1000;
+                    if (config.ingredients.length > 4) p += (config.ingredients.length - 4) * 1000;
                 } else if (id.startsWith('hb')) {
-                    price += config.ingredients.length * 1000;
+                    p += config.ingredients.length * 1000;
                 }
 
-                setCart([...cart, { ...selected, cartId: Math.random(), finalPrice: price, config: {...config} }]);
+                setCart([...cart, { ...selected, cartId: Math.random(), finalPrice: p, config: {...config} }]);
                 setSelected(null);
                 setConfig({ ingredients: [], base: '', protein: '', observations: '' });
             };
 
-            const removeOne = (key) => {
-                const idx = cart.findIndex(item => {
-                    const itemKey = JSON.stringify({ id: item.id, ing: [...item.config.ingredients].sort(), b: item.config.base, p: item.config.protein, obs: item.config.observations.trim().toLowerCase() });
-                    return itemKey === key;
-                });
-                if (idx !== -1) {
-                    const newCart = [...cart];
-                    newCart.splice(idx, 1);
-                    setCart(newCart);
-                }
-            };
-
             if (loading) return (
-                <div className="min-h-screen flex flex-col items-center justify-center">
-                    <Loader2 className="animate-spin text-yellow-500 mb-4" size={48} />
-                    <p className="text-zinc-500 font-black uppercase text-xs tracking-widest">Sincronizando con Google Sheet...</p>
+                <div className="min-h-screen flex flex-col items-center justify-center bg-black">
+                    <div className="w-12 h-12 border-4 border-yellow-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest">Sincronizando Menú...</p>
                 </div>
             );
 
             if (error) return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+                <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-black text-center">
                     <AlertCircle className="text-red-500 mb-4" size={48} />
-                    <h2 className="text-yellow-500 font-black uppercase mb-2">Error de Datos</h2>
-                    <p className="text-zinc-500 text-sm mb-6">{error}</p>
-                    <button onClick={()=>location.reload()} className="bg-yellow-500 text-black px-10 py-3 rounded-full font-black uppercase text-xs">Reintentar</button>
+                    <h2 className="text-yellow-500 font-black uppercase mb-2 italic">Error de Conexión</h2>
+                    <p className="text-zinc-500 text-sm mb-6 max-w-xs">{error}</p>
+                    <button onClick={() => location.reload()} className="bg-yellow-500 text-black px-8 py-3 rounded-full font-black uppercase text-xs">Reintentar</button>
                 </div>
             );
 
+            const currentItems = activeTab === 'bebestibles' ? [...menu.calientes, ...menu.frios] : menu[activeTab] || [];
+
             return (
-                <div className="max-w-md mx-auto min-h-screen flex flex-col">
-                    {/* Header */}
+                <div className="max-w-md mx-auto bg-black min-h-screen relative">
                     <header className="p-6 sticky top-0 bg-black/90 backdrop-blur-md z-40 border-b border-zinc-900">
                         <div className="flex justify-between items-center mb-6">
                             <div>
-                                <h1 className="text-2xl font-black italic text-yellow-500 uppercase tracking-tighter">MAKE YOUR BURGER</h1>
-                                <p className="text-[10px] text-zinc-500 font-bold flex items-center gap-1 mt-1"><MapPin size={10}/> Cardenio Avello #753, Curanilahue</p>
+                                <h1 className="text-2xl font-black italic text-yellow-500 leading-none">MAKE YOUR BURGER</h1>
+                                <p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase tracking-widest flex items-center gap-1"><MapPin size={10}/> Curanilahue</p>
                             </div>
-                            <div className="flex flex-col items-end">
-                                <span className="text-[9px] text-zinc-600 font-black uppercase mb-1">Mesa</span>
-                                <input type="number" placeholder="00" value={table} onChange={e=>setTable(e.target.value)} className="w-12 bg-zinc-900 border border-zinc-800 rounded-lg p-2 text-center text-yellow-500 font-black focus:border-yellow-500 outline-none transition-all" />
-                            </div>
+                            <input type="number" placeholder="MESA" value={table} onChange={e=>setTable(e.target.value)} className="w-12 bg-zinc-900 border border-zinc-800 rounded-lg p-2 text-center text-yellow-500 font-black outline-none focus:border-yellow-500" />
                         </div>
                         <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                             {[
@@ -167,128 +134,90 @@
                                 {id:'makebowl', icon:Salad, label:'Bowl'},
                                 {id:'hotbowls', icon:Utensils, label:'Hot Bowls'},
                                 {id:'churrascos', icon:ClipboardList, label:'Churrascos'},
-                                {id:'bebestibles', icon:Coffee, label:'Bebestibles'}
+                                {id:'bebestibles', icon:Coffee, label:'Bebidas'}
                             ].map(t => (
-                                <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`px-4 py-3 rounded-2xl flex flex-col items-center min-w-[80px] transition-all ${activeTab === t.id ? 'bg-yellow-500 text-black scale-105' : 'bg-zinc-900 text-zinc-500'}`}>
-                                    <t.icon size={18} />
-                                    <span className="text-[9px] font-black uppercase mt-1">{t.label}</span>
+                                <button key={t.id} onClick={()=>setActiveTab(t.id)} className={`px-4 py-3 rounded-2xl flex flex-col items-center min-w-[75px] transition-all ${activeTab === t.id ? 'bg-yellow-500 text-black scale-105' : 'bg-zinc-900 text-zinc-500'}`}>
+                                    <t.icon size={16} />
+                                    <span className="text-[8px] font-black uppercase mt-1 tracking-tighter">{t.label}</span>
                                 </button>
                             ))}
                         </div>
                     </header>
 
-                    {/* Main Content */}
-                    <main className="p-6 pb-32 flex-1">
-                        {(activeTab === 'bebestibles' ? [...menu.bebestibles.calientes, ...menu.bebestibles.frios] : menu[activeTab]).map(item => {
-                            const isAvailable = item.disponible?.trim().toUpperCase() === 'SI';
+                    <main className="p-6 pb-32">
+                        {currentItems.map(item => {
+                            const isAvailable = (item.disponible || "").trim().toUpperCase() === 'SI';
                             return (
-                                <div key={item.id} className={`p-6 bg-zinc-900/30 border border-zinc-900 rounded-[2.5rem] mb-4 transition-all ${!isAvailable ? 'opacity-30 grayscale pointer-events-none' : 'hover:border-zinc-700'}`}>
+                                <div key={item.id} className={`p-6 bg-zinc-900/30 border border-zinc-800 rounded-[2rem] mb-4 ${!isAvailable ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex-1">
-                                            <h3 className="text-lg font-black italic uppercase leading-none">{item.nombre}</h3>
+                                            <h3 className="text-lg font-black italic uppercase leading-tight">{item.nombre}</h3>
                                             <p className="text-[11px] text-zinc-500 mt-2 leading-tight">{item.descripcion}</p>
                                         </div>
                                         <span className="text-white font-black text-xl ml-4">{formatPrice(item.precio)}</span>
                                     </div>
                                     {isAvailable && (
-                                        <button onClick={()=>setSelected(item)} className="w-full bg-zinc-900 text-zinc-400 py-3 rounded-xl font-black text-[10px] uppercase border border-zinc-800 hover:bg-yellow-500 hover:text-black transition-all">Personalizar</button>
+                                        <button onClick={()=>setSelected(item)} className="w-full bg-zinc-900 text-zinc-400 py-3 rounded-xl font-black text-[10px] uppercase border border-zinc-800 hover:bg-yellow-500 hover:text-black transition-colors">Personalizar</button>
                                     )}
                                 </div>
                             );
                         })}
                     </main>
 
-                    {/* Cart Button */}
                     {cart.length > 0 && (
                         <div className="fixed bottom-6 left-6 right-6 z-50 max-w-md mx-auto">
-                            <button onClick={()=>setIsPreview(true)} className="w-full bg-yellow-500 text-black h-16 rounded-[1.5rem] flex justify-between items-center px-8 shadow-2xl shadow-yellow-500/30 font-black italic active:scale-95 transition-all">
+                            <button onClick={()=>setIsPreview(true)} className="w-full bg-yellow-500 text-black h-16 rounded-2xl flex justify-between items-center px-8 shadow-2xl font-black italic active:scale-95 transition-all">
                                 <div className="flex items-center gap-4">
                                     <div className="bg-black text-white px-3 py-1 rounded-full text-[10px] font-black">{cart.length}</div>
-                                    <span className="uppercase tracking-tighter">Ver Pedido</span>
+                                    <span className="uppercase tracking-tighter">Mi Pedido</span>
                                 </div>
                                 <span className="text-xl tracking-tighter">{formatPrice(cart.reduce((s,i)=>s+i.finalPrice, 0))}</span>
                             </button>
                         </div>
                     )}
 
-                    {/* Modal Config */}
+                    {/* MODAL CONFIG */}
                     {selected && (
-                        <div className="fixed inset-0 z-[60] bg-black/95 p-6 overflow-y-auto backdrop-blur-xl">
-                            <div className="max-w-md mx-auto bg-zinc-950 rounded-[3rem] border border-zinc-800 p-8 space-y-8 mt-4 mb-20">
+                        <div className="fixed inset-0 z-[60] bg-black/95 p-6 overflow-y-auto backdrop-blur-md">
+                            <div className="bg-zinc-950 rounded-[3rem] border border-zinc-800 p-8 space-y-8 mt-10 max-w-sm mx-auto">
                                 <div className="flex justify-between items-start">
-                                    <div>
-                                        <h2 className="text-2xl font-black uppercase italic text-yellow-500">{selected.nombre}</h2>
-                                        <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Personalizar</p>
-                                    </div>
+                                    <h2 className="text-2xl font-black uppercase italic text-yellow-500 leading-tight">{selected.nombre}</h2>
                                     <button onClick={()=>setSelected(null)} className="p-2 bg-zinc-900 rounded-full text-zinc-500"><X size={20}/></button>
                                 </div>
-
-                                {selected.categoria === 'makebowl' && (
-                                    <>
-                                        <div className="space-y-3">
-                                            <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Elige tu Base</h5>
-                                            <div className="flex flex-wrap gap-2">
-                                                {BOWL_BASES.map(b => <button key={b} onClick={()=>setConfig({...config, base:b})} className={`px-4 py-2 rounded-xl text-xs font-black border transition-all ${config.base === b ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>{b}</button>)}
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Elige tu Proteína</h5>
-                                            <div className="flex flex-wrap gap-2">
-                                                {BOWL_PROTEINS.map(p => <button key={p} onClick={()=>setConfig({...config, protein:p})} className={`px-4 py-2 rounded-xl text-xs font-black border transition-all ${config.protein === p ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>{p}</button>)}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="space-y-4">
-                                    <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ingredientes Extra (+$1.000)</h5>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {INGREDIENTS.map(ing => (
-                                            <label key={ing} className={`p-3 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${config.ingredients.includes(ing) ? 'border-yellow-500 bg-yellow-500/5' : 'border-zinc-900 bg-zinc-900/40'}`}>
-                                                <input type="checkbox" className="hidden" checked={config.ingredients.includes(ing)} onChange={() => setConfig({...config, ingredients: config.ingredients.includes(ing) ? config.ingredients.filter(i=>i!==ing) : [...config.ingredients, ing]})} />
-                                                <div className={`w-4 h-4 rounded-md border flex items-center justify-center ${config.ingredients.includes(ing) ? 'bg-yellow-500 border-yellow-500' : 'border-zinc-800'}`}>{config.ingredients.includes(ing) && <CheckCircle2 size={12} className="text-black" />}</div>
-                                                <span className={`text-[10px] font-black uppercase tracking-tighter ${config.ingredients.includes(ing) ? 'text-white' : 'text-zinc-600'}`}>{ing}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <textarea placeholder="Instrucciones especiales..." className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-xs h-28 focus:border-yellow-500 outline-none placeholder:text-zinc-700 italic" onChange={e=>setConfig({...config, observations: e.target.value})}></textarea>
-                                <button onClick={handleAddToCart} className="w-full bg-yellow-500 text-black font-black py-5 rounded-[1.5rem] uppercase text-sm shadow-xl shadow-yellow-500/20 active:scale-95 transition-all">Añadir al Pedido</button>
+                                <textarea placeholder="Instrucciones especiales..." className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-4 text-xs h-32 outline-none focus:border-yellow-500 text-white italic" onChange={e=>setConfig({...config, observations: e.target.value})}></textarea>
+                                <button onClick={addToCart} className="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black uppercase text-sm">Agregar al Carrito</button>
                             </div>
                         </div>
                     )}
 
-                    {/* Modal Resumen */}
+                    {/* MODAL RESUMEN */}
                     {isPreview && (
                         <div className="fixed inset-0 z-[70] bg-black p-6 flex flex-col">
                             <div className="flex justify-between items-center mb-10">
-                                <div><h2 className="text-4xl font-black italic text-yellow-500 tracking-tighter">RESUMEN</h2><p className="text-zinc-500 text-[10px] font-black uppercase">Mesa {table || '?'}</p></div>
+                                <h2 className="text-4xl font-black italic text-yellow-500 tracking-tighter">RESUMEN</h2>
                                 <button onClick={()=>setIsPreview(false)} className="bg-zinc-900 p-3 rounded-full"><X size={24}/></button>
                             </div>
-                            <div className="flex-1 overflow-y-auto space-y-4 pr-2 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                                 {groupedCart.map(item => (
-                                    <div key={item.key} className="bg-zinc-900/50 p-6 rounded-[2.5rem] border border-zinc-900">
+                                    <div key={item.key} className="bg-zinc-900/50 p-6 rounded-[2.5rem] border border-zinc-800">
                                         <div className="flex justify-between items-start">
                                             <div>
-                                                <h4 className="font-black text-lg uppercase italic leading-tight">{item.nombre} {item.qty > 1 && <span className="text-yellow-500 ml-2">x{item.qty}</span>}</h4>
+                                                <h4 className="font-black text-lg uppercase italic">{item.nombre} {item.qty > 1 && <span className="text-yellow-500 ml-2">x{item.qty}</span>}</h4>
                                                 <span className="text-yellow-500 font-black text-sm">{formatPrice(item.total)}</span>
                                             </div>
-                                            <button onClick={()=>removeOne(item.key)} className="text-zinc-700 hover:text-red-500 p-2 bg-black/20 rounded-full">{item.qty > 1 ? <Minus size={18}/> : <X size={18}/>}</button>
-                                        </div>
-                                        <div className="text-[10px] text-zinc-500 mt-4 space-y-1 uppercase font-black tracking-widest">
-                                            {item.config.ingredients.length > 0 && <p>Extras: <span className="text-white">{item.config.ingredients.join(', ')}</span></p>}
-                                            {item.config.observations && <div className="mt-4 p-4 bg-black/40 rounded-2xl border-l-2 border-yellow-500 italic text-zinc-300 normal-case font-medium tracking-normal">"{item.config.observations}"</div>}
+                                            <button onClick={()=>{
+                                                const idx = cart.findIndex(i => JSON.stringify({ id: i.id, ing: [...i.config.ingredients].sort(), b: i.config.base, p: i.config.protein, obs: i.config.observations.trim().toLowerCase() }) === item.key);
+                                                const nc = [...cart]; nc.splice(idx,1); setCart(nc);
+                                            }} className="text-zinc-700 hover:text-red-500 p-2 bg-black/20 rounded-full"><Minus size={18}/></button>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                             <div className="pt-8 border-t border-zinc-900 mt-6">
                                 <div className="flex justify-between items-end mb-8">
-                                    <div><span className="text-zinc-600 text-[10px] font-black uppercase block mb-1">Total Pedido</span><span className="text-5xl font-black italic tracking-tighter">{formatPrice(cart.reduce((s,i)=>s+i.finalPrice, 0))}</span></div>
-                                    {!table && <span className="text-red-500 text-[9px] font-black animate-pulse uppercase">Ingresa Mesa</span>}
+                                    <div><span className="text-zinc-600 text-[10px] font-black uppercase block mb-1">Mesa {table || '?'}</span><span className="text-5xl font-black italic">{formatPrice(cart.reduce((s,i)=>s+i.finalPrice, 0))}</span></div>
                                 </div>
-                                <button disabled={!table || cart.length === 0} onClick={()=>{alert("¡Pedido enviado!"); setCart([]); setIsPreview(false);}} className="w-full bg-white text-black font-black py-6 rounded-[2.5rem] text-xl uppercase tracking-tighter disabled:opacity-20 hover:bg-yellow-500 transition-all shadow-xl shadow-white/5">Confirmar Pedido</button>
+                                <button disabled={!table} onClick={()=>{alert("¡Pedido enviado!"); setCart([]); setIsPreview(false);}} className="w-full bg-white text-black font-black py-6 rounded-[2.5rem] text-xl uppercase tracking-tighter disabled:opacity-20 hover:bg-yellow-500 transition-all">Confirmar Pedido</button>
                             </div>
                         </div>
                     )}
