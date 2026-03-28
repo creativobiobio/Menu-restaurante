@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 Miggas — Cocina</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #1a1410;
+  --surface: #2a1f1a;
+  --surface2: #3a2d25;
+  --accent: #e8a04a;
+  --accent2: #c47830;
+  --green: #4caf6a;
+  --green-dark: #2d7a45;
+  --orange: #f07030;
+  --red: #e04040;
+  --blue: #4a8fc4;
+  --blue-dark: #2d6a9a;
+  --purple: #9b59b6;
+  --text: #f0e8d8;
+  --muted: #9a8878;
+  --border: #4a3828;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: Inter, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px; background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-title { font-family: "Playfair Display"; font-size: 20px; color: var(--accent); letter-spacing: 3px; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.estado-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--green); animation: pulso 2s infinite; }
+.estado-dot.error { background: var(--red); animation: none; }
+@keyframes pulso { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.estado-texto { font-size: 12px; color: var(--muted); }
+.sound-btn {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  padding: 5px 10px; border-radius: 8px; font-size: 12px; cursor: pointer;
+}
+.sound-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── REFRESH BAR ── */
+.refresh-bar { height: 3px; background: var(--border); position: relative; overflow: hidden; }
+.refresh-progress { position: absolute; left: 0; top: 0; height: 100%; background: var(--accent2); transition: width linear; }
+
+/* ── CONTADORES ── */
+.contadores {
+  display: flex; background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.contador-col {
+  flex: 1; padding: 10px 16px; display: flex; align-items: center; gap: 10px;
+  border-right: 1px solid var(--border);
+}
+.contador-col:last-child { border-right: none; }
+.contador-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.contador-num { font-size: 22px; font-weight: 700; }
+.contador-num.pendiente { color: var(--orange); }
+.contador-num.listo     { color: var(--green); }
+.contador-num.ventas    { color: var(--purple); }
+
+/* ── LAYOUT TRES COLUMNAS ── */
+.columnas {
+  display: grid;
+  grid-template-columns: 1fr 1fr 220px;
+  gap: 0;
+  min-height: calc(100vh - 120px);
+}
+@media(max-width: 900px) {
+  .columnas { grid-template-columns: 1fr 1fr 180px; }
+}
+@media(max-width: 650px) {
+  .columnas { grid-template-columns: 1fr; }
+  .columna-ventas { display: none; }
+}
+
+.columna { border-right: 2px solid var(--border); min-height: 100%; }
+.columna:last-child { border-right: none; }
+
+.col-header {
+  padding: 12px 16px;
+  position: sticky; top: 57px; z-index: 50;
+  display: flex; align-items: center; gap: 10px;
+}
+.col-header.pendiente-header { background: rgba(240,112,48,0.12); border-bottom: 2px solid rgba(240,112,48,0.3); }
+.col-header.listo-header     { background: rgba(76,175,106,0.12); border-bottom: 2px solid rgba(76,175,106,0.3); }
+.col-header.ventas-header    { background: rgba(155,89,182,0.12); border-bottom: 2px solid rgba(155,89,182,0.3); }
+
+.col-titulo { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; }
+.col-titulo.pendiente { color: var(--orange); }
+.col-titulo.listo     { color: var(--green); }
+.col-titulo.ventas    { color: var(--purple); font-size: 11px; }
+
+.col-badge {
+  font-size: 11px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; min-width: 26px; text-align: center;
+}
+.col-badge.pendiente { background: rgba(240,112,48,0.2); color: var(--orange); }
+.col-badge.listo     { background: rgba(76,175,106,0.2); color: var(--green); }
+.col-badge.ventas    { background: rgba(155,89,182,0.2); color: var(--purple); }
+
+.col-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+
+/* ── CARDS PEDIDO ── */
+.card {
+  background: var(--surface); border-radius: 12px;
+  border: 2px solid var(--border); overflow: hidden;
+  display: flex; flex-direction: column;
+  animation: aparecer 0.35s ease;
+}
+.card.listo-card   { border-color: rgba(76,175,106,0.4); }
+.card.proceso-card { border-color: rgba(255,200,0,0.35); }
+.card.listo-anim   { animation: desaparecer 0.5s ease forwards; }
+@keyframes aparecer   { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes desaparecer{ from{opacity:1;transform:scale(1)} to{opacity:0;transform:scale(0.92)} }
+
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 12px; border-bottom: 1px solid var(--border);
+}
+.mesa-tag  { font-size: 15px; font-weight: 700; color: var(--accent); }
+.hora-tag  { font-size: 10px; color: var(--muted); margin-top: 1px; }
+.timer { font-size: 11px; text-align: right; }
+.timer.normal  { color: var(--muted); }
+.timer.urgente { color: var(--red); font-weight: 700; animation: parpadeo 1s infinite; }
+@keyframes parpadeo { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.card-body { padding: 10px 12px; flex: 1; }
+.plato-nombre { font-family: "Playfair Display"; font-size: 15px; color: var(--text); margin-bottom: 4px; }
+.plato-qty {
+  display: inline-block; background: var(--surface2);
+  color: var(--accent); font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px; margin-bottom: 4px;
+}
+.plato-nota {
+  font-size: 11px; color: var(--orange);
+  background: rgba(240,112,48,0.1);
+  border-left: 3px solid var(--orange);
+  padding: 4px 8px; border-radius: 0 6px 6px 0;
+  margin-top: 6px; line-height: 1.5;
+}
+.plato-nota::before { content: "📝 "; }
+
+/* Ingredientes en card cocina */
+.plato-ingredientes {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+}
+.ing-tag {
+  font-size: 10px; background: rgba(232,160,74,0.12);
+  color: var(--accent); border: 1px solid rgba(232,160,74,0.25);
+  padding: 2px 6px; border-radius: 6px;
+}
+
+/* ── BOTONES ACCIÓN ── */
+.card-footer { display: flex; gap: 6px; padding: 8px 12px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+.btn { flex: 1; min-width: 60px; padding: 9px 4px; border-radius: 10px; border: none; font-size: 11px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.btn-proceso  { background: rgba(255,200,0,0.12); color: #f0c040; border: 1px solid rgba(255,200,0,0.3); }
+.btn-proceso:hover { background: rgba(255,200,0,0.25); }
+.btn-listo    { background: var(--green-dark); color: #fff; }
+.btn-listo:hover { background: var(--green); }
+.btn-entregado { background: var(--blue-dark); color: #fff; }
+.btn-entregado:hover { background: var(--blue); }
+.btn-cancelar { background: rgba(224,64,64,0.12); color: var(--red); border: 1px solid rgba(224,64,64,0.3); flex: 0.5; }
+.btn-cancelar:hover { background: rgba(224,64,64,0.25); }
+.btn-devolver { background: rgba(240,112,48,0.12); color: var(--orange); border: 1px solid rgba(240,112,48,0.3); font-size: 10px; }
+.btn-devolver:hover { background: rgba(240,112,48,0.25); }
+
+/* ── COLUMNA VENTAS ── */
+.columna-ventas { background: rgba(0,0,0,0.2); }
+
+.venta-item {
+  background: var(--surface); border-radius: 8px;
+  border: 1px solid var(--border); padding: 8px 10px;
+  margin-bottom: 6px;
+}
+.venta-nombre { font-size: 12px; color: var(--text); font-weight: 600; line-height: 1.3; }
+.venta-meta { font-size: 10px; color: var(--muted); margin-top: 3px; }
+.venta-precio { font-size: 11px; color: var(--purple); font-weight: 700; margin-top: 3px; }
+
+.ventas-total {
+  position: sticky; bottom: 0;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 10px 12px;
+}
+.ventas-total-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+.ventas-total-valor { font-size: 16px; font-weight: 700; color: var(--purple); margin-top: 2px; }
+.ventas-count { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+.btn-limpiar-ventas {
+  width: 100%; padding: 6px; background: none;
+  border: 1px solid var(--border); border-radius: 6px;
+  color: var(--muted); font-size: 10px; cursor: pointer; margin-top: 6px;
+}
+.btn-limpiar-ventas:hover { border-color: var(--red); color: var(--red); }
+
+/* ── VACÍO ── */
+.vacio-col { padding: 36px 16px; text-align: center; color: var(--muted); }
+.vacio-col .icono { font-size: 32px; opacity: 0.4; margin-bottom: 8px; }
+.vacio-col .txt   { font-size: 11px; line-height: 1.6; }
+
+/* ── TOAST ── */
+#toast {
+  position: fixed; bottom: 24px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); padding: 12px 24px;
+  border-radius: 12px; font-size: 14px; opacity: 0;
+  transition: all 0.3s; z-index: 999; white-space: nowrap;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── MODAL DETALLE ── */
+#modal-detalle {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  z-index: 500; display: none; align-items: center; justify-content: center;
+  padding: 20px;
+}
+#modal-detalle.visible { display: flex; }
+.detalle-box {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 16px; padding: 24px; max-width: 400px; width: 100%;
+}
+.detalle-titulo { font-family: "Playfair Display"; font-size: 20px; color: var(--accent); margin-bottom: 12px; }
+.detalle-close { float: right; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; margin-top: -4px; }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-title">4 MIGGAS · COCINA</div>
+  <div class="topbar-right">
+    <button class="sound-btn" id="sound-btn" onclick="toggleSonido()">🔔 Sonido</button>
+    <span class="estado-texto" id="estado-texto">Conectando...</span>
+    <div class="estado-dot" id="estado-dot"></div>
+  </div>
+</div>
+
+<div class="refresh-bar"><div class="refresh-progress" id="refresh-progress"></div></div>
+
+<!-- CONTADORES -->
+<div class="contadores">
+  <div class="contador-col">
+    <div>
+      <div class="contador-label">Pendientes</div>
+      <div class="contador-num pendiente" id="cnt-pendiente">0</div>
+    </div>
+  </div>
+  <div class="contador-col">
+    <div>
+      <div class="contador-label">Listos</div>
+      <div class="contador-num listo" id="cnt-listo">0</div>
+    </div>
+  </div>
+  <div class="contador-col">
+    <div>
+      <div class="contador-label">Ventas hoy</div>
+      <div class="contador-num ventas" id="cnt-ventas">$ 0</div>
+    </div>
+  </div>
+</div>
+
+<!-- TRES COLUMNAS -->
+<div class="columnas">
+
+  <!-- COLUMNA 1: PEDIDOS / EN PROCESO -->
+  <div class="columna">
+    <div class="col-header pendiente-header">
+      <span class="col-titulo pendiente">⏳ Pedidos</span>
+      <span class="col-badge pendiente" id="badge-pendiente">0</span>
+    </div>
+    <div class="col-body" id="col-pendientes">
+      <div class="vacio-col"><div class="icono">🍽️</div><div class="txt">Sin pedidos pendientes</div></div>
+    </div>
+  </div>
+
+  <!-- COLUMNA 2: LISTOS -->
+  <div class="columna">
+    <div class="col-header listo-header">
+      <span class="col-titulo listo">✓ Listos para entregar</span>
+      <span class="col-badge listo" id="badge-listo">0</span>
+    </div>
+    <div class="col-body" id="col-listos">
+      <div class="vacio-col"><div class="icono">👨‍🍳</div><div class="txt">Aquí aparecerán los platos listos</div></div>
+    </div>
+  </div>
+
+  <!-- COLUMNA 3: VENTAS DEL DÍA (acumulado) -->
+  <div class="columna columna-ventas">
+    <div class="col-header ventas-header">
+      <span class="col-titulo ventas">💰 Ventas del día</span>
+      <span class="col-badge ventas" id="badge-ventas">0</span>
+    </div>
+    <div class="col-body" id="col-ventas" style="padding-bottom:0">
+      <div class="vacio-col" id="ventas-vacio">
+        <div class="icono">📊</div>
+        <div class="txt">Las ventas aparecerán aquí al entregar pedidos</div>
+      </div>
+    </div>
+    <div class="ventas-total">
+      <div class="ventas-total-label">Total del día</div>
+      <div class="ventas-total-valor" id="ventas-total-valor">$ 0</div>
+      <div class="ventas-count" id="ventas-count">0 platos entregados</div>
+      <button class="btn-limpiar-ventas" onclick="limpiarVentas()">✕ Limpiar al cerrar turno</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwldpvMOP7-KgPj-cQRnq3BBk61-jB0rX9tnxgCS_qr8M_gJtnriE2MLQ0uO1OnOee-/exec";
+const INTERVALO_MS = 6000;
+
+let todosLosPedidos = [];
+// Ventas del día — persiste en localStorage para sobrevivir recargas
+let ventasDelDia = cargarVentas();
+let sonidoActivo = true;
+let ultimoConteo = 0;
+
+// ── PERSISTENCIA VENTAS ──────────────────────────────────────
+function cargarVentas(){
+  try {
+    const hoy = new Date().toDateString();
+    const raw = localStorage.getItem("ventas_4miggas");
+    if(!raw) return { fecha: hoy, items: [] };
+    const data = JSON.parse(raw);
+    // Si es otro día, resetear
+    if(data.fecha !== hoy) return { fecha: hoy, items: [] };
+    return data;
+  } catch(e) { return { fecha: new Date().toDateString(), items: [] }; }
+}
+
+function guardarVentas(){
+  try { localStorage.setItem("ventas_4miggas", JSON.stringify(ventasDelDia)); } catch(e){}
+}
+
+function limpiarVentas(){
+  if(!confirm("¿Limpiar todas las ventas del día?")) return;
+  ventasDelDia = { fecha: new Date().toDateString(), items: [] };
+  guardarVentas();
+  renderVentas();
+  mostrarToast("Ventas del día limpiadas");
+}
+
+// ── AUDIO ──────────────────────────────────────────────────
+function beep() {
+  if (!sonidoActivo) return;
+  try {
+    const ctx  = new (window.AudioContext || window.webkitAudioContext)();
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function toggleSonido() {
+  sonidoActivo = !sonidoActivo;
+  document.getElementById("sound-btn").textContent = sonidoActivo ? "🔔 Sonido" : "🔕 Silencio";
+  mostrarToast(sonidoActivo ? "Sonido activado" : "Sonido silenciado");
+}
+
+// ── FETCH ──────────────────────────────────────────────────
+async function fetchPedidos() {
+  try {
+    const r = await fetch(SCRIPT_URL + "?accion=listar&t=" + Date.now());
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error);
+    return d.pedidos;
+  } catch(e) {
+    setEstado("error");
+    console.error(e);
+    return null;
+  }
+}
+
+// ── LOOP PRINCIPAL ─────────────────────────────────────────
+async function loop() {
+  const pedidos = await fetchPedidos();
+  if (pedidos === null) return;
+
+  const pendientesNuevos = pedidos.filter(p => p.estado === "PENDIENTE").length;
+  if (pendientesNuevos > ultimoConteo && ultimoConteo >= 0) {
+    beep();
+    const nuevo = pedidos.find(p => p.estado === "PENDIENTE");
+    if (nuevo) mostrarToast("🆕 Nuevo pedido — Mesa " + nuevo.mesa);
+  }
+  ultimoConteo    = pendientesNuevos;
+  todosLosPedidos = pedidos;
+
+  renderTodo();
+  setEstado("ok");
+  animarProgress();
+}
+
+// ── RENDER PRINCIPAL ───────────────────────────────────────
+function renderTodo() {
+  const pendientes = todosLosPedidos.filter(p => p.estado === "PENDIENTE" || p.estado === "EN_PROCESO");
+  const listos     = todosLosPedidos.filter(p => p.estado === "LISTO");
+
+  // Contadores superiores
+  document.getElementById("cnt-pendiente").textContent = pendientes.length;
+  document.getElementById("cnt-listo").textContent     = listos.length;
+
+  // Badges columnas
+  document.getElementById("badge-pendiente").textContent = pendientes.length;
+  document.getElementById("badge-listo").textContent     = listos.length;
+
+  // Columna 1: pendientes + en proceso
+  const colP = document.getElementById("col-pendientes");
+  if (pendientes.length === 0) {
+    colP.innerHTML = `<div class="vacio-col"><div class="icono">🍽️</div><div class="txt">Sin pedidos pendientes</div></div>`;
+  } else {
+    colP.innerHTML = pendientes.map(p => cardPendiente(p)).join("");
+  }
+
+  // Columna 2: listos para entregar
+  const colL = document.getElementById("col-listos");
+  if (listos.length === 0) {
+    colL.innerHTML = `<div class="vacio-col"><div class="icono">👨‍🍳</div><div class="txt">Aquí aparecerán<br>los platos listos</div></div>`;
+  } else {
+    colL.innerHTML = listos.map(p => cardListo(p)).join("");
+  }
+
+  // Columna 3: ventas (solo render, no modificar)
+  renderVentas();
+}
+
+// ── RENDER VENTAS ──────────────────────────────────────────
+function renderVentas(){
+  const col = document.getElementById("col-ventas");
+  const items = ventasDelDia.items;
+  const totalVentas = items.reduce((s, v) => s + (Number(v.precio) * v.cantidad), 0);
+  const totalPlatos = items.reduce((s, v) => s + v.cantidad, 0);
+
+  document.getElementById("cnt-ventas").textContent = "$ " + totalVentas.toLocaleString("es-CL");
+  document.getElementById("badge-ventas").textContent = items.length;
+  document.getElementById("ventas-total-valor").textContent = "$ " + totalVentas.toLocaleString("es-CL");
+  document.getElementById("ventas-count").textContent = totalPlatos + " plato" + (totalPlatos !== 1 ? "s" : "") + " entregado" + (totalPlatos !== 1 ? "s" : "");
+
+  const vacio = document.getElementById("ventas-vacio");
+  if(items.length === 0){
+    if(vacio) vacio.style.display = "block";
+    // Limpiar items pero dejar vacio
+    const existentes = col.querySelectorAll(".venta-item");
+    existentes.forEach(e => e.remove());
+    return;
+  }
+  if(vacio) vacio.style.display = "none";
+
+  // Render desde más reciente
+  col.innerHTML = [...items].reverse().map(v => `
+    <div class="venta-item">
+      <div class="venta-nombre">${v.plato} × ${v.cantidad}</div>
+      <div class="venta-meta">Mesa ${v.mesa} · ${v.hora}</div>
+      ${v.precio ? `<div class="venta-precio">$ ${(Number(v.precio) * v.cantidad).toLocaleString("es-CL")}</div>` : ""}
+    </div>`).join("");
+}
+
+// ── CARD PENDIENTE ─────────────────────────────────────────
+function cardPendiente(p) {
+  const min     = Math.floor((Date.now() - new Date(p.timestamp)) / 60000);
+  const urgente = min >= 15;
+  const esProceso = p.estado === "EN_PROCESO";
+
+  // Parsear ingredientes si existen en la nota
+  let ingredientesHTML = "";
+  if(p.nota && p.nota.includes(",")){
+    const ings = p.nota.split(",").map(s => s.trim()).filter(Boolean);
+    if(ings.length > 1){
+      ingredientesHTML = `<div class="plato-ingredientes">${ings.map(i => `<span class="ing-tag">${i}</span>`).join("")}</div>`;
+    }
+  }
+
+  return `
+  <div class="card ${esProceso ? 'proceso-card' : ''}" id="card-${p.fila}">
+    <div class="card-header">
+      <div>
+        <div class="mesa-tag">Mesa ${p.mesa}</div>
+        <div class="hora-tag">${p.hora}</div>
+      </div>
+      <div class="timer ${urgente ? "urgente" : "normal"}">⏱ ${min} min${urgente ? " ¡URGENTE!" : ""}</div>
+    </div>
+    <div class="card-body">
+      <div class="plato-nombre">${p.plato}</div>
+      <span class="plato-qty">× ${p.cantidad}</span>
+      ${ingredientesHTML}
+      ${p.nota && !ingredientesHTML ? `<div class="plato-nota">${p.nota}</div>` : ""}
+    </div>
+    <div class="card-footer">
+      ${esProceso
+        ? `<button class="btn btn-devolver" onclick="marcar(${p.fila},'PENDIENTE')">↩ Pendiente</button>`
+        : `<button class="btn btn-proceso"  onclick="marcar(${p.fila},'EN_PROCESO')">🔥 En proceso</button>`
+      }
+      <button class="btn btn-listo"    onclick="marcar(${p.fila},'LISTO')">✓ Listo</button>
+      <button class="btn btn-cancelar" onclick="marcar(${p.fila},'CANCELADO')">✕</button>
+    </div>
+  </div>`;
+}
+
+// ── CARD LISTO ─────────────────────────────────────────────
+function cardListo(p) {
+  return `
+  <div class="card listo-card" id="card-${p.fila}">
+    <div class="card-header">
+      <div>
+        <div class="mesa-tag">Mesa ${p.mesa}</div>
+        <div class="hora-tag">${p.hora}</div>
+      </div>
+      <div style="font-size:18px">🛎️</div>
+    </div>
+    <div class="card-body">
+      <div class="plato-nombre">${p.plato}</div>
+      <span class="plato-qty">× ${p.cantidad}</span>
+      ${p.nota ? `<div class="plato-nota">${p.nota}</div>` : ""}
+    </div>
+    <div class="card-footer">
+      <button class="btn btn-devolver" onclick="marcar(${p.fila},'PENDIENTE')">↩ Cocina</button>
+      <button class="btn btn-entregado" onclick="marcarEntregado(${p.fila})">✓ Entregado</button>
+    </div>
+  </div>`;
+}
+
+// ── MARCAR ESTADO ──────────────────────────────────────────
+async function marcar(fila, estado) {
+  try {
+    const url = SCRIPT_URL + "?accion=marcar&fila=" + fila + "&estado=" + estado;
+    await fetch(url);
+    mostrarToast({
+      LISTO:     "✓ Plato listo para entregar",
+      EN_PROCESO:"🔥 En preparación",
+      PENDIENTE: "↩ Devuelto a cocina",
+      CANCELADO: "✕ Cancelado"
+    }[estado] || "");
+    setTimeout(loop, 500);
+  } catch(e) {
+    mostrarToast("Error al actualizar");
+    console.error(e);
+  }
+}
+
+// ── MARCAR ENTREGADO → va a ventas del día ─────────────────
+async function marcarEntregado(fila) {
+  const card = document.getElementById("card-" + fila);
+  if (card) card.classList.add("listo-anim");
+
+  const pedido = todosLosPedidos.find(p => p.fila === fila);
+
+  // Agregar a ventas del día (SOLO esta columna acumula)
+  if (pedido) {
+    ventasDelDia.items.push({
+      plato:    pedido.plato,
+      cantidad: pedido.cantidad,
+      mesa:     pedido.mesa,
+      hora:     new Date().toLocaleTimeString("es-CL", { hour:"2-digit", minute:"2-digit" }),
+      precio:   pedido.precio || 0
+    });
+    guardarVentas();
+    renderVentas();
+  }
+
+  try {
+    const url = SCRIPT_URL + "?accion=marcar&fila=" + fila + "&estado=ENTREGADO";
+    await fetch(url);
+    mostrarToast("🛎️ Entregado — Mesa " + (pedido?.mesa || ""));
+    setTimeout(loop, 600);
+  } catch(e) {
+    mostrarToast("Error al marcar entregado");
+    console.error(e);
+  }
+}
+
+// ── ESTADO CONEXIÓN ────────────────────────────────────────
+function setEstado(tipo) {
+  const dot = document.getElementById("estado-dot");
+  const txt = document.getElementById("estado-texto");
+  if (tipo === "ok") {
+    dot.className   = "estado-dot";
+    txt.textContent = "En vivo · " + new Date().toLocaleTimeString("es-CL", { hour:"2-digit", minute:"2-digit" });
+  } else {
+    dot.className   = "estado-dot error";
+    txt.textContent = "Sin conexión";
+  }
+}
+
+// ── PROGRESS BAR ───────────────────────────────────────────
+function animarProgress() {
+  const bar = document.getElementById("refresh-progress");
+  bar.style.transition = "none";
+  bar.style.width = "0%";
+  setTimeout(() => {
+    bar.style.transition = `width ${INTERVALO_MS}ms linear`;
+    bar.style.width = "100%";
+  }, 50);
+}
+
+// ── TOAST ──────────────────────────────────────────────────
+function mostrarToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+// ── ARRANCAR ───────────────────────────────────────────────
+loop();
+setInterval(loop, INTERVALO_MS);
+</script>
+</body>
+</html>
