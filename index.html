@@ -3,248 +3,90 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Make Your Burger - Menú</title>
+<title>Make Your Burger</title>
 
 <script src="https://cdn.tailwindcss.com"></script>
-<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-<script src="https://unpkg.com/lucide@latest"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
 <style>
-body { font-family: 'Inter', sans-serif; background:#000; color:#fff; margin:0; }
-.no-scrollbar::-webkit-scrollbar { display:none; }
-#fallback { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; z-index:10; }
+body { background:#000; color:#fff; margin:0; font-family:sans-serif; }
+#fallback { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:#000; }
 </style>
 </head>
 
 <body>
 
-<div id="fallback">
-<p style="color:#666;font-size:12px;letter-spacing:2px;">Cargando interfaz...</p>
-</div>
-
+<div id="fallback">Cargando interfaz...</div>
 <div id="root"></div>
 
 <script>
-// fallback seguro
-setTimeout(()=>{
-    const fb = document.getElementById('fallback');
-    if(fb) fb.style.display = 'none';
-},3000);
-</script>
-
-<script type="text/babel">
-
-const { Plus, X, Utensils, Coffee, Flame, Salad, ClipboardList, Minus, AlertCircle } = lucide;
 
 const API_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4yZc7M7meCPQ6Mc0WmYpw08NceifjZ2ccaXCgCImrOePe46mgGKnAdaeLVVf6Zu2PfMUpO7NYJ7tD/pub?gid=0&single=true&output=csv";
 
-const clean = (t) => (t || "").toString().toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-const formatPrice = (p) => `$${(Number(p)||0).toLocaleString('es-CL')}`;
+const clean = t => (t||"").toLowerCase().trim();
+const formatPrice = p => "$"+(Number(p)||0).toLocaleString("es-CL");
 
-const App = () => {
+function App(){
 
 const [menu,setMenu]=React.useState(null);
-const [loading,setLoading]=React.useState(true);
-const [error,setError]=React.useState(null);
-const [activeTab,setActiveTab]=React.useState('burgers');
 const [cart,setCart]=React.useState([]);
-const [table,setTable]=React.useState('');
-const [search,setSearch]=React.useState('');
-const [isPreview,setIsPreview]=React.useState(false);
+const [table,setTable]=React.useState("");
 
-// carga datos
 React.useEffect(()=>{
 
-const cached = localStorage.getItem("menu");
-
-if(cached){
-    setMenu(JSON.parse(cached));
-    setLoading(false);
-    return;
-}
-
 Papa.parse(API_URL,{
-    download:true,
-    header:true,
-    complete:(res)=>{
-        const items = res.data;
+download:true,
+header:true,
+complete:(res)=>{
 
-        const filter = (c)=>items.filter(i=>clean(i.categoria)===clean(c));
+const items = res.data;
 
-        const data = {
-            burgers:filter('burgers'),
-            makebowl:filter('makebowl'),
-            hotbowls:filter('hotbowls'),
-            churrascos:filter('churrascos'),
-            calientes:filter('calientes'),
-            frios:filter('frios')
-        };
+setMenu({
+burgers: items.filter(i=>clean(i.categoria)==="burgers")
+});
 
-        setMenu(data);
-        localStorage.setItem("menu",JSON.stringify(data));
-        setLoading(false);
-    },
-    error:()=>{
-        setError("No se pudo cargar el menú");
-        setLoading(false);
-    }
+document.getElementById("fallback").style.display="none";
+}
 });
 
 },[]);
 
-if(loading){
-return(
-<div className="min-h-screen flex items-center justify-center">
-<div className="w-10 h-10 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin"></div>
-</div>
+if(!menu) return null;
+
+return React.createElement("div",{className:"p-4"},
+
+React.createElement("h1",null,"MAKE YOUR BURGER"),
+
+React.createElement("input",{
+placeholder:"Mesa",
+value:table,
+onChange:e=>setTable(e.target.value)
+}),
+
+menu.burgers.map(i=>
+React.createElement("div",{key:i.nombre},
+
+React.createElement("h3",null,i.nombre),
+React.createElement("p",null,formatPrice(i.precio)),
+
+React.createElement("button",{
+onClick:()=>{
+if(!table){ alert("Ingresa mesa"); return;}
+setCart([...cart,i]);
+}
+},"Agregar")
+
+)
+)
+
 );
 }
 
-if(error){
-return(
-<div className="min-h-screen flex flex-col items-center justify-center text-center">
-<AlertCircle className="text-red-500 mb-4" size={40}/>
-<p>{error}</p>
-</div>
+ReactDOM.createRoot(document.getElementById("root")).render(
+React.createElement(App)
 );
-}
-
-// filtro + búsqueda
-const activeItems = (
-activeTab==='bebestibles'
-?[...menu.calientes,...menu.frios]
-:(menu[activeTab]||[])
-).filter(i=>clean(i.nombre).includes(clean(search)));
-
-return(
-<div className="max-w-md mx-auto min-h-screen flex flex-col bg-black">
-
-<header className="p-6 sticky top-0 bg-black border-b border-zinc-900">
-
-<h1 className="text-2xl font-black text-yellow-500">MAKE YOUR BURGER</h1>
-
-<input
-placeholder="Buscar..."
-value={search}
-onChange={e=>setSearch(e.target.value)}
-className="w-full bg-zinc-900 p-3 rounded-xl mt-4"
-/>
-
-<div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
-
-{[
-{id:'burgers',icon:Flame,label:'Burgers'},
-{id:'makebowl',icon:Salad,label:'Bowl'},
-{id:'hotbowls',icon:Utensils,label:'Hot'},
-{id:'churrascos',icon:ClipboardList,label:'Churrasco'},
-{id:'bebestibles',icon:Coffee,label:'Bebidas'}
-].map(t=>(
-<button key={t.id}
-onClick={()=>setActiveTab(t.id)}
-className={`px-4 py-2 rounded-xl ${activeTab===t.id?'bg-yellow-500 text-black':'bg-zinc-900 text-zinc-400'}`}>
-<t.icon size={16}/>
-</button>
-))}
-
-</div>
-
-</header>
-
-<main className="p-4 pb-32 flex-1">
-
-{activeItems.map(item=>{
-
-const available = (item.disponible||"").toUpperCase()==='SI';
-
-return(
-<div key={item.id} className={`p-4 mb-3 rounded-xl border ${available?'bg-zinc-900':'opacity-30'}`}>
-
-<h3 className="font-black">{item.nombre}</h3>
-<p className="text-xs text-zinc-500">{item.descripcion||"Sin descripción"}</p>
-
-<div className="flex justify-between items-center mt-3">
-<span>{formatPrice(item.precio)}</span>
-
-<button
-onClick={()=>{
-if(!table){ alert("Ingresa mesa"); return; }
-
-setCart([...cart,{...item,cartId:Math.random(),finalPrice:Number(item.precio||0)}]);
-navigator.vibrate?.(50);
-}}
-className="bg-yellow-500 text-black px-4 py-2 rounded-lg text-xs font-bold"
->
-Agregar
-</button>
-
-</div>
-
-</div>
-);
-})}
-
-</main>
-
-{cart.length>0 && (
-<div className="fixed bottom-4 left-4 right-4">
-<button
-onClick={()=>setIsPreview(true)}
-className="w-full bg-yellow-500 text-black p-4 rounded-xl font-black"
->
-Ver pedido ({cart.length})
-</button>
-</div>
-)}
-
-{isPreview && (
-<div className="fixed inset-0 bg-black p-6 flex flex-col">
-
-<button onClick={()=>setIsPreview(false)} className="mb-6">Cerrar</button>
-
-<div className="flex-1 overflow-y-auto">
-
-{cart.map((i,idx)=>(
-<div key={i.cartId} className="flex justify-between mb-3">
-
-<span>{i.nombre}</span>
-
-<button onClick={()=>{
-const nc=[...cart]; nc.splice(idx,1);
-setCart(nc);
-}}>
-<Minus size={18}/>
-</button>
-
-</div>
-))}
-
-</div>
-
-<div className="mt-6">
-<h2 className="text-xl font-black">
-{formatPrice(cart.reduce((s,i)=>s+i.finalPrice,0))}
-</h2>
-
-<button
-onClick={()=>{alert("Pedido enviado"); setCart([]); setIsPreview(false);}}
-className="w-full bg-white text-black p-4 rounded-xl mt-4"
->
-Confirmar
-</button>
-
-</div>
-
-</div>
-)}
-
-</div>
-);
-};
-
-ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
 
 </script>
 
