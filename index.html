@@ -75,6 +75,8 @@ header{ padding:30px 20px 10px; text-align:center; }
 }
 .card:hover{ border-color:rgba(122,46,46,0.25); transform:scale(1.01); }
 .card.seleccionado{ border-color:var(--green) !important; background:#f6fff9; }
+.card.tiene-constructor{ cursor:default; }
+.card.tiene-constructor:hover{ transform:none; border-color:rgba(122,46,46,0.15); }
 
 .agotado{ opacity:0.45; filter:grayscale(0.9); pointer-events:none; }
 .agotado::after{
@@ -88,29 +90,24 @@ header{ padding:30px 20px 10px; text-align:center; }
 .check-overlay{
   position:absolute; top:0; left:0; width:100%; height:100%;
   display:flex; align-items:center; justify-content:center;
-  background:rgba(46,122,74,0.72); opacity:0;
-  transition:opacity 0.2s;
+  background:rgba(46,122,74,0.72); opacity:0; transition:opacity 0.2s;
 }
 .card.seleccionado .check-overlay{ opacity:1; }
 .check-mark{ font-size:32px; color:#fff; line-height:1; }
 
-.qty-control{
-  display:none; align-items:center; gap:6px; margin-top:6px;
-}
+.qty-control{ display:none; align-items:center; gap:6px; margin-top:6px; }
 .card.seleccionado .qty-control{ display:flex; }
 .qty-btn{
   width:26px; height:26px; border-radius:50%; border:1.5px solid var(--green);
   background:#fff; color:var(--green); font-size:16px; font-weight:700;
-  cursor:pointer; display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; line-height:1;
+  cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; line-height:1;
 }
 .qty-btn:hover{ background:var(--green); color:#fff; }
 .qty-num{ font-size:15px; font-weight:700; color:var(--green); min-width:20px; text-align:center; }
 
 .nota-btn{
   font-size:11px; color:var(--muted); background:none; border:1px dashed #ccc;
-  border-radius:6px; padding:2px 8px; cursor:pointer; margin-top:4px; display:none;
-  width:fit-content;
+  border-radius:6px; padding:2px 8px; cursor:pointer; margin-top:4px; display:none; width:fit-content;
 }
 .card.seleccionado .nota-btn{ display:block; }
 .nota-input{
@@ -119,6 +116,19 @@ header{ padding:30px 20px 10px; text-align:center; }
   color:var(--text); background:#f9f9f9; resize:none;
 }
 .nota-input.visible{ display:block; }
+
+.btn-armar{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--accent); color:white; border:none;
+  padding:8px 14px; border-radius:10px; font-size:12px; font-weight:600;
+  cursor:pointer; margin-top:8px; transition:background 0.2s;
+}
+.btn-armar:hover{ background:var(--accent-soft); }
+.constructor-badge{
+  font-size:10px; background:rgba(122,46,46,0.1); color:var(--accent);
+  border:1px solid rgba(122,46,46,0.2); padding:2px 8px; border-radius:6px;
+  margin-top:4px; display:inline-block;
+}
 
 .info{ padding:12px; flex:1; display:flex; flex-direction:column; justify-content:space-between; min-width:0; }
 .title{ font-family:"Playfair Display"; font-size:16px; margin-bottom:4px; }
@@ -133,23 +143,107 @@ header{ padding:30px 20px 10px; text-align:center; }
 .precio-label{ font-size:10px; color:var(--muted); white-space:nowrap; }
 .precio-valor{ font-weight:700; font-size:13px; color:var(--accent); white-space:nowrap; }
 
+#modal-constructor{
+  position:fixed; inset:0; background:rgba(0,0,0,0.6);
+  z-index:3000; display:none; align-items:flex-end;
+}
+#modal-constructor.visible{ display:flex; }
+#constructor-box{
+  background:#fff; width:100%; max-height:92vh; border-radius:20px 20px 0 0;
+  overflow-y:auto; animation:slideUp 0.3s ease;
+}
+@keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
+
+.cons-header{
+  position:sticky; top:0; background:#fff; z-index:10;
+  padding:20px 20px 12px; border-bottom:1px solid #f0ebe0;
+}
+.cons-title{ font-family:"Playfair Display"; font-size:22px; color:var(--accent); }
+.cons-subtitle{ font-size:12px; color:var(--muted); margin-top:2px; }
+.cons-close{
+  position:absolute; top:18px; right:18px; background:none; border:1px solid #ddd;
+  font-size:16px; width:32px; height:32px; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; color:var(--muted);
+}
+.cons-close:hover{ background:#f0ebe0; }
+
+.cons-section{ padding:16px 20px; }
+.cons-section-title{
+  font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  color:var(--accent); margin-bottom:12px; display:flex; align-items:center; gap:8px;
+}
+.cons-section-title span{ font-size:10px; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0; }
+
+.tallas-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media(min-width:500px){ .tallas-grid{ grid-template-columns:repeat(4,1fr); } }
+.talla-btn{
+  border:2px solid #ddd; border-radius:12px; padding:10px 8px;
+  cursor:pointer; background:#fff; text-align:center; transition:0.2s;
+}
+.talla-btn:hover{ border-color:var(--accent-soft); }
+.talla-btn.activa{ border-color:var(--accent); background:#fef8f8; }
+.talla-nombre{ font-size:13px; font-weight:600; color:var(--text); }
+.talla-precio{ font-size:12px; font-weight:700; color:var(--accent); margin-top:2px; }
+
+.ingredientes-grid{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+@media(min-width:500px){ .ingredientes-grid{ grid-template-columns:repeat(3,1fr); } }
+.ing-item{
+  border:1.5px solid #e8e0d8; border-radius:10px; padding:10px 8px;
+  cursor:pointer; background:#fff; text-align:center; transition:0.2s; position:relative;
+}
+.ing-item:hover{ border-color:var(--accent-soft); background:#fef8f8; }
+.ing-item.seleccionado{ border-color:var(--green); background:#f0faf4; }
+.ing-item.extra{ border-color:#e8a04a; background:#fffbf0; }
+.ing-item.extra.seleccionado{ border-color:#c47830; background:#fff8e6; }
+.ing-check{
+  position:absolute; top:5px; right:5px; width:16px; height:16px;
+  border-radius:50%; background:var(--green); color:#fff;
+  font-size:10px; display:none; align-items:center; justify-content:center;
+}
+.ing-item.seleccionado .ing-check{ display:flex; }
+.ing-nombre{ font-size:12px; font-weight:600; color:var(--text); }
+.ing-extra-label{ font-size:10px; color:#c47830; margin-top:2px; }
+
+.ing-contador{
+  font-size:12px; color:var(--muted); margin-bottom:10px;
+  padding:8px 12px; background:#f9f5f0; border-radius:8px;
+  display:flex; justify-content:space-between; align-items:center;
+}
+.ing-contador strong{ color:var(--text); }
+.ing-contador .alerta{ color:var(--accent); font-weight:600; }
+
+.cons-resumen{
+  position:sticky; bottom:0; background:#fff;
+  border-top:2px solid #f0ebe0; padding:16px 20px;
+}
+.resumen-ingredientes{
+  font-size:12px; color:var(--muted); min-height:20px; margin-bottom:10px; line-height:1.5;
+}
+.resumen-ingredientes strong{ color:var(--text); }
+.resumen-precio{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.resumen-precio-label{ font-size:13px; color:var(--muted); }
+.resumen-precio-valor{ font-size:20px; font-weight:700; color:var(--accent); }
+.btn-agregar-pedido{
+  width:100%; padding:14px; background:var(--green); color:#fff;
+  border:none; border-radius:12px; font-size:15px; font-weight:700;
+  cursor:pointer; transition:background 0.2s;
+}
+.btn-agregar-pedido:hover{ background:#235f38; }
+.btn-agregar-pedido:disabled{ background:#aaa; cursor:not-allowed; }
+
 #pedido-bar{
   position:fixed; bottom:0; left:0; right:0; z-index:1000;
   background:#fff; border-top:2px solid var(--accent);
-  padding:12px 20px; display:none;
-  flex-direction:column; gap:8px;
+  padding:12px 20px; display:none; flex-direction:column; gap:8px;
   box-shadow:0 -4px 20px rgba(0,0,0,0.12);
 }
 #pedido-bar.visible{ display:flex; }
 .bar-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.bar-resumen{
-  font-size:13px; color:var(--text); flex:1;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
+.bar-resumen{ font-size:13px; color:var(--text); flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .bar-resumen strong{ color:var(--accent); }
 .btn-ver-pedido{
   background:none; border:1px solid var(--accent); color:var(--accent);
-  padding:6px 14px; border-radius:8px; font-size:12px; cursor:pointer;
+  padding:6px 14px; border-radius:8px; font-size:12px; cursor:pointer; white-space:nowrap;
 }
 .btn-enviar{
   width:100%; padding:14px; background:var(--green); color:#fff;
@@ -168,14 +262,18 @@ header{ padding:30px 20px 10px; text-align:center; }
   background:#fff; width:100%; max-height:80vh; border-radius:20px 20px 0 0;
   overflow-y:auto; padding:24px 20px 32px; animation:slideUp 0.3s ease;
 }
-@keyframes slideUp{ from{ transform:translateY(100%); } to{ transform:translateY(0); } }
 .modal-title{ font-family:"Playfair Display"; font-size:20px; color:var(--accent); margin-bottom:16px; }
 .modal-item{ display:flex; justify-content:space-between; align-items:flex-start; padding:10px 0; border-bottom:1px solid #f0ebe0; gap:10px; }
 .modal-item:last-child{ border-bottom:none; }
 .modal-item-name{ font-size:14px; font-weight:600; }
-.modal-item-nota{ font-size:11px; color:var(--muted); margin-top:2px; }
-.modal-item-qty{ font-size:13px; color:var(--muted); }
+.modal-item-detail{ font-size:11px; color:var(--muted); margin-top:3px; line-height:1.5; }
+.modal-item-qty{ font-size:13px; color:var(--muted); white-space:nowrap; }
 .modal-item-precio{ font-size:14px; font-weight:700; color:var(--accent); white-space:nowrap; }
+.modal-item-remove{
+  background:none; border:none; color:#ddd; font-size:16px;
+  cursor:pointer; padding:0 4px; transition:color 0.2s; flex-shrink:0;
+}
+.modal-item-remove:hover{ color:var(--accent); }
 .modal-total{ display:flex; justify-content:space-between; padding:14px 0 0; font-weight:700; font-size:16px; }
 .modal-close{
   position:absolute; top:16px; right:20px;
@@ -184,19 +282,18 @@ header{ padding:30px 20px 10px; text-align:center; }
 .modal-header{ position:relative; }
 .btn-limpiar{
   width:100%; margin-top:14px; padding:10px; background:none;
-  border:1px solid #ddd; border-radius:10px; color:var(--muted);
-  font-size:13px; cursor:pointer;
+  border:1px solid #ddd; border-radius:10px; color:var(--muted); font-size:13px; cursor:pointer;
 }
 
 #toast{
   position:fixed; bottom:90px; left:50%; transform:translateX(-50%) translateY(20px);
   background:var(--green); color:#fff; padding:12px 24px; border-radius:12px;
-  font-size:14px; font-weight:600; opacity:0; transition:all 0.3s; z-index:3000;
+  font-size:14px; font-weight:600; opacity:0; transition:all 0.3s; z-index:4000;
   pointer-events:none; white-space:nowrap;
 }
 #toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
-.footer-spacer{ height:120px; }
+.footer-spacer{ height:140px; }
 footer{ text-align:center; padding:40px 20px 10px; color:var(--muted); font-size:12px; }
 .creativo-link{ display:flex; flex-direction:column; align-items:center; margin-top:25px; text-decoration:none; transition:0.3s; }
 .creativo-link:hover{ opacity:0.7; }
@@ -262,16 +359,100 @@ footer{ text-align:center; padding:40px 20px 10px; color:var(--muted); font-size
   </div>
 </div>
 
+<div id="modal-constructor" onclick="cerrarConstructorSiFondo(event)">
+  <div id="constructor-box">
+    <div class="cons-header">
+      <div class="cons-title" id="cons-titulo">Armar Hamburguesa</div>
+      <div class="cons-subtitle" id="cons-subtitulo">Elige tu tamaño e ingredientes</div>
+      <button class="cons-close" onclick="cerrarConstructor()">✕</button>
+    </div>
+    <div class="cons-section">
+      <div class="cons-section-title">Tamaño <span>(requerido)</span></div>
+      <div class="tallas-grid" id="tallas-container"></div>
+    </div>
+    <div class="cons-section">
+      <div class="cons-section-title" id="ing-titulo">Ingredientes incluidos <span id="ing-hint"></span></div>
+      <div class="ing-contador" id="ing-contador">
+        <span>Selecciona tus ingredientes</span>
+        <span id="ing-count">0 / 0</span>
+      </div>
+      <div class="ingredientes-grid" id="ingredientes-container"></div>
+    </div>
+    <div class="cons-resumen">
+      <div class="resumen-ingredientes" id="resumen-ing">Sin ingredientes seleccionados</div>
+      <div class="resumen-precio">
+        <span class="resumen-precio-label">Total</span>
+        <span class="resumen-precio-valor" id="resumen-precio">$ 0</span>
+      </div>
+      <button class="btn-agregar-pedido" id="btn-agregar" onclick="agregarDesdConstructor()" disabled>
+        + Agregar al pedido
+      </button>
+    </div>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
 const SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRKndmjX1CcpICAtCKFwhPwomV8wbnPNgl_s2Bo9rHv9Y4Gq0UPU-tG_XqjCmP2671jzn6QnrdRtYwe/pub?gid=0&single=true&output=csv";
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwldpvMOP7-KgPj-cQRnq3BBk61-jB0rX9tnxgCS_qr8M_gJtnriE2MLQ0uO1OnOee-/exec";
 
+const CONSTRUCTORES = {
+  "hamburguesa": {
+    tipo: "hamburguesa",
+    titulo: "Armar Hamburguesa",
+    subtitulo: "Elige tu carne e ingredientes",
+    tallas: [
+      { nombre: "Simple",    precio: 5800 },
+      { nombre: "Doble",     precio: 6800 },
+      { nombre: "Triple",    precio: 7800 },
+      { nombre: "Cuádruple", precio: 8800 }
+    ],
+    ingredientesIncluidos: 3,
+    precioPorExtra: 1000,
+    ingredientes: [
+      "Palta","Tomate","Lechuga","Choclo","Cebolla morada",
+      "Huevo","Palmitos","Cebolla caramelizada","Champiñón",
+      "Tocino","Queso cheddar","Camarón","Pepinillos",
+      "Queso philadelphia","Salame"
+    ]
+  },
+  "bowl": {
+    tipo: "bowl",
+    titulo: "Armar Bowl",
+    subtitulo: "Elige tu base e ingredientes",
+    tallas: [
+      { nombre: "Small",   precio: 5500 },
+      { nombre: "Regular", precio: 6500 },
+      { nombre: "Large",   precio: 7500 }
+    ],
+    ingredientesIncluidos: 4,
+    precioPorExtra: 800,
+    ingredientes: [
+      "Palta","Tomate","Lechuga","Choclo","Cebolla morada",
+      "Huevo","Palmitos","Champiñón","Queso cheddar",
+      "Pepinillos","Zanahoria rallada","Rúcula","Espinaca",
+      "Aceitunas","Garbanzos"
+    ]
+  }
+};
+
+function detectarConstructor(item) {
+  const nombre = item.name.toLowerCase();
+  if (nombre.includes("hamburguesa")) return CONSTRUCTORES["hamburguesa"];
+  if (nombre.includes("bowl")) return CONSTRUCTORES["bowl"];
+  return null;
+}
+
 let items = [];
-let pedido = {};
+let pedido = [];
+let pedidoIdCounter = 0;
 let menuListo = false;
 let tiempoMinimoCumplido = false;
+let constructorActivo = null;
+let consItem = null;
+let consTallaSeleccionada = null;
+let consIngredientes = [];
 
 function intentarOcultarSplash(){
   if(menuListo && tiempoMinimoCumplido){
@@ -294,37 +475,26 @@ function parsearFila(row){
 }
 
 async function load(){
-  setTimeout(() => {
-    tiempoMinimoCumplido = true;
-    intentarOcultarSplash();
-  }, 1800);
+  setTimeout(() => { tiempoMinimoCumplido = true; intentarOcultarSplash(); }, 1800);
   try{
     const url = SHEET_URL + "&t=" + Date.now();
     const r = await fetch(url);
     if(!r.ok) throw new Error("HTTP " + r.status);
     const t = await r.text();
     const rows = t.split(/\r?\n/).slice(1);
-    items = rows.map(row => {
+    items = rows.map((row, idx) => {
       try{
         if(!row.trim()) return null;
         const clean = parsearFila(row);
         if(clean.length < 4) return null;
         return {
-          cat:         clean[0] || "Otros",
-          name:        clean[1] || "",
-          desc:        clean[2] || "",
-          price:       clean[3] || "0",
-          stock:       clean[4] || "SI",
-          img:         clean[5] || "",
-          etiqueta1:   clean[6] || "",
-          precio1:     clean[7] || "",
-          etiqueta2:   clean[8] || "",
-          precio2:     clean[9] || "",
-          adicionales: clean[10] || ""
+          id: "item_" + idx, cat: clean[0]||"Otros", name: clean[1]||"",
+          desc: clean[2]||"", price: clean[3]||"0", stock: clean[4]||"SI",
+          img: clean[5]||"", etiqueta1: clean[6]||"", precio1: clean[7]||"",
+          etiqueta2: clean[8]||"", precio2: clean[9]||"", adicionales: clean[10]||""
         };
       } catch{ return null; }
     }).filter(Boolean);
-    items = items.map((item, idx) => ({ ...item, id: "item_" + idx }));
     renderCats();
     renderMenu("Todo");
   } catch(e){
@@ -332,18 +502,14 @@ async function load(){
     document.getElementById("menu").innerHTML =
       '<div style="text-align:center;padding:60px 20px;color:#8b7e7e">Error al cargar el menú.<br><br>' +
       '<button onclick="location.reload()" style="background:var(--accent);color:#fff;border:none;padding:8px 20px;border-radius:8px;cursor:pointer;font-size:13px">Reintentar</button></div>';
-  } finally{
-    menuListo = true;
-    intentarOcultarSplash();
-  }
+  } finally{ menuListo = true; intentarOcultarSplash(); }
 }
 
 function renderCats(){
   const cats = [...new Set(items.map(i => i.cat))];
   const container = document.getElementById("cats");
   container.innerHTML = "";
-  const all = ["Todo", ...cats];
-  all.forEach(c => {
+  ["Todo", ...cats].forEach(c => {
     const count = c === "Todo" ? items.length : items.filter(i => i.cat === c).length;
     const btn = document.createElement("button");
     btn.className = "cat-btn";
@@ -360,18 +526,10 @@ function renderCats(){
 
 function renderPrecio(i){
   if(i.etiqueta1){
-    return `
-      <div class="precios">
-        <div class="precio-fila">
-          <span class="precio-label">${i.etiqueta1}</span>
-          <span class="precio-valor">$ ${Number(i.precio1).toLocaleString("es-CL")}</span>
-        </div>
-        ${i.etiqueta2 ? `
-        <div class="precio-fila">
-          <span class="precio-label">${i.etiqueta2}</span>
-          <span class="precio-valor">$ ${Number(i.precio2).toLocaleString("es-CL")}</span>
-        </div>` : ""}
-      </div>`;
+    return `<div class="precios">
+      <div class="precio-fila"><span class="precio-label">${i.etiqueta1}</span><span class="precio-valor">$ ${Number(i.precio1).toLocaleString("es-CL")}</span></div>
+      ${i.etiqueta2?`<div class="precio-fila"><span class="precio-label">${i.etiqueta2}</span><span class="precio-valor">$ ${Number(i.precio2).toLocaleString("es-CL")}</span></div>`:""}
+    </div>`;
   }
   return `<div class="price">$ ${Number(i.price).toLocaleString("es-CL")}</div>`;
 }
@@ -380,38 +538,52 @@ function renderMenu(cat){
   const container = document.getElementById("menu");
   let filtered = cat === "Todo" ? items : items.filter(i => i.cat === cat);
   const q = document.getElementById("search").value.toLowerCase();
-  if(q){
-    filtered = filtered.filter(i =>
-      i.name.toLowerCase().includes(q) ||
-      i.desc.toLowerCase().includes(q)
-    );
-  }
-  filtered.sort((a, b) => {
-    const aOff = a.stock?.toUpperCase() === "NO" ? 1 : 0;
-    const bOff = b.stock?.toUpperCase() === "NO" ? 1 : 0;
-    return aOff - bOff;
-  });
+  if(q) filtered = filtered.filter(i => i.name.toLowerCase().includes(q) || i.desc.toLowerCase().includes(q));
+  filtered.sort((a,b) => (a.stock?.toUpperCase()==="NO"?1:0) - (b.stock?.toUpperCase()==="NO"?1:0));
+
   container.innerHTML = filtered.map(i => {
-    const enPedido = pedido[i.id];
-    const qty = enPedido ? enPedido.qty : 1;
-    const nota = enPedido ? enPedido.nota : "";
-    const selClass = enPedido ? "seleccionado" : "";
+    const constructor = detectarConstructor(i);
     const agotadoClass = i.stock?.toUpperCase() === "NO" ? "agotado" : "";
+    const itemsEnPedido = pedido.filter(p => p.itemId === i.id);
+    const cantEnPedido = itemsEnPedido.reduce((s,p) => s+p.qty, 0);
+    const selClass = itemsEnPedido.length > 0 ? "seleccionado" : "";
+
+    if(constructor){
+      return `
+      <div class="card tiene-constructor ${agotadoClass}" id="card-${i.id}">
+        <div class="img">
+          ${i.img?`<img src="${i.img}" loading="lazy">`:""}
+          ${cantEnPedido>0?`<div class="check-overlay" style="opacity:1"><span class="check-mark" style="font-size:20px">✓ ${cantEnPedido}</span></div>`:""}
+        </div>
+        <div class="info">
+          <div>
+            <div class="title">${i.name}</div>
+            <div class="desc">${i.desc||""}</div>
+            <span class="constructor-badge">🍔 Personalizable</span>
+          </div>
+          <div class="bottom">
+            ${renderPrecio(i)}
+            <div class="badge">${i.cat}</div>
+            <button class="btn-armar" onclick="abrirConstructor('${i.id}')">+ Armar</button>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    const enPedidoSimple = pedido.find(p => p.itemId===i.id && !p.esConstructor);
+    const qty = enPedidoSimple ? enPedidoSimple.qty : 1;
+    const nota = enPedidoSimple ? enPedidoSimple.nota : "";
     return `
     <div class="card ${selClass} ${agotadoClass}" id="card-${i.id}" onclick="toggleItem(event,'${i.id}')">
       <div class="img">
-        ${i.img ? `<img src="${i.img}" loading="lazy">` : ""}
+        ${i.img?`<img src="${i.img}" loading="lazy">`:""}
         <div class="check-overlay"><span class="check-mark">✓</span></div>
       </div>
       <div class="info">
         <div>
           <div class="title">${i.name}</div>
-          <div class="desc">${i.desc || ""}</div>
-          ${i.adicionales ? `
-          <div class="adicionales">
-            <div class="adicionales-label">Adicionales</div>
-            ${i.adicionales}
-          </div>` : ""}
+          <div class="desc">${i.desc||""}</div>
+          ${i.adicionales?`<div class="adicionales"><div class="adicionales-label">Adicionales</div>${i.adicionales}</div>`:""}
         </div>
         <div class="bottom">
           ${renderPrecio(i)}
@@ -422,7 +594,7 @@ function renderMenu(cat){
             <button class="qty-btn" onclick="cambiarQty('${i.id}',1)">+</button>
           </div>
           <button class="nota-btn" id="notabtn-${i.id}" onclick="toggleNota(event,'${i.id}')">+ Nota para cocina</button>
-          <textarea class="nota-input ${nota ? 'visible' : ''}" id="nota-${i.id}" rows="2"
+          <textarea class="nota-input ${nota?'visible':''}" id="nota-${i.id}" rows="2"
             placeholder="Ej: sin cebolla, bien cocido..."
             onclick="event.stopPropagation()"
             oninput="guardarNota('${i.id}', this.value)">${nota}</textarea>
@@ -433,164 +605,256 @@ function renderMenu(cat){
 }
 
 function toggleItem(event, id){
-  if(event.target.closest('.qty-control') ||
-     event.target.closest('.nota-btn') ||
-     event.target.closest('.nota-input')) return;
-  const item = items.find(i => i.id === id);
+  if(event.target.closest('.qty-control')||event.target.closest('.nota-btn')||event.target.closest('.nota-input')) return;
+  const item = items.find(i => i.id===id);
   if(!item) return;
-  if(pedido[id]){ delete pedido[id]; } else { pedido[id] = { item, qty: 1, nota: "" }; }
+  const idx = pedido.findIndex(p => p.itemId===id && !p.esConstructor);
+  if(idx>=0){ pedido.splice(idx,1); }
+  else { pedido.push({ uid:pedidoIdCounter++, itemId:id, item, qty:1, nota:"", esConstructor:false, nombre:item.name, precio:Number(item.etiqueta1?item.precio1:item.price) }); }
   actualizarCard(id);
   actualizarBarra();
 }
 
 function actualizarCard(id){
-  const card = document.getElementById("card-" + id);
+  const card = document.getElementById("card-"+id);
   if(!card) return;
-  const enPedido = pedido[id];
+  const enPedido = pedido.find(p => p.itemId===id && !p.esConstructor);
   card.classList.toggle("seleccionado", !!enPedido);
-  const qnum = document.getElementById("qnum-" + id);
+  const qnum = document.getElementById("qnum-"+id);
   if(qnum) qnum.textContent = enPedido ? enPedido.qty : 1;
   if(enPedido && enPedido.nota){
-    const notaEl = document.getElementById("nota-" + id);
+    const notaEl = document.getElementById("nota-"+id);
     if(notaEl){ notaEl.classList.add("visible"); notaEl.value = enPedido.nota; }
   }
 }
 
 function cambiarQty(id, delta){
-  if(!pedido[id]) return;
-  pedido[id].qty = Math.max(1, pedido[id].qty + delta);
-  const qnum = document.getElementById("qnum-" + id);
-  if(qnum) qnum.textContent = pedido[id].qty;
+  const item = pedido.find(p => p.itemId===id && !p.esConstructor);
+  if(!item) return;
+  item.qty = Math.max(1, item.qty+delta);
+  const qnum = document.getElementById("qnum-"+id);
+  if(qnum) qnum.textContent = item.qty;
   actualizarBarra();
 }
 
 function toggleNota(event, id){
   event.stopPropagation();
-  const notaEl = document.getElementById("nota-" + id);
+  const notaEl = document.getElementById("nota-"+id);
   if(!notaEl) return;
   notaEl.classList.toggle("visible");
   if(notaEl.classList.contains("visible")) notaEl.focus();
 }
 
 function guardarNota(id, valor){
-  if(pedido[id]) pedido[id].nota = valor;
+  const item = pedido.find(p => p.itemId===id && !p.esConstructor);
+  if(item) item.nota = valor;
 }
+
+function abrirConstructor(itemId){
+  const item = items.find(i => i.id===itemId);
+  if(!item) return;
+  const conf = detectarConstructor(item);
+  if(!conf) return;
+  constructorActivo = conf; consItem = item; consTallaSeleccionada = null; consIngredientes = [];
+  document.getElementById("cons-titulo").textContent = conf.titulo;
+  document.getElementById("cons-subtitulo").textContent = conf.subtitulo;
+  document.getElementById("ing-titulo").innerHTML = `Ingredientes <span>(${conf.ingredientesIncluidos} incluidos · extra +$${conf.precioPorExtra.toLocaleString("es-CL")} c/u)</span>`;
+  document.getElementById("tallas-container").innerHTML = conf.tallas.map((t,idx) =>
+    `<div class="talla-btn" id="talla-${idx}" onclick="seleccionarTalla(${idx})">
+      <div class="talla-nombre">${t.nombre}</div>
+      <div class="talla-precio">$ ${t.precio.toLocaleString("es-CL")}</div>
+    </div>`).join("");
+  document.getElementById("ingredientes-container").innerHTML = conf.ingredientes.map((ing,idx) =>
+    `<div class="ing-item" id="ing-${idx}" onclick="toggleIngrediente(${idx})">
+      <div class="ing-check">✓</div>
+      <div class="ing-nombre">${ing}</div>
+      <div class="ing-extra-label" id="ing-extra-${idx}" style="display:none">+$${conf.precioPorExtra.toLocaleString("es-CL")}</div>
+    </div>`).join("");
+  actualizarResumenConstructor();
+  document.getElementById("modal-constructor").classList.add("visible");
+  document.getElementById("constructor-box").scrollTop = 0;
+}
+
+function seleccionarTalla(idx){
+  consTallaSeleccionada = idx;
+  document.querySelectorAll(".talla-btn").forEach((b,i) => b.classList.toggle("activa", i===idx));
+  actualizarResumenConstructor();
+}
+
+function toggleIngrediente(idx){
+  const pos = consIngredientes.indexOf(idx);
+  if(pos>=0){ consIngredientes.splice(pos,1); } else { consIngredientes.push(idx); }
+  actualizarIngredientesUI();
+  actualizarResumenConstructor();
+}
+
+function actualizarIngredientesUI(){
+  if(!constructorActivo) return;
+  const max = constructorActivo.ingredientesIncluidos;
+  constructorActivo.ingredientes.forEach((_,idx) => {
+    const el = document.getElementById("ing-"+idx);
+    const extraLabel = document.getElementById("ing-extra-"+idx);
+    if(!el) return;
+    const seleccionado = consIngredientes.includes(idx);
+    const esExtra = seleccionado && consIngredientes.indexOf(idx) >= max;
+    el.classList.toggle("seleccionado", seleccionado);
+    el.classList.toggle("extra", esExtra);
+    if(extraLabel) extraLabel.style.display = esExtra ? "block" : "none";
+  });
+  const count = consIngredientes.length;
+  const extras = Math.max(0, count-max);
+  const contador = document.getElementById("ing-contador");
+  if(count < max){
+    contador.innerHTML = `<span>Faltan <strong>${max-count}</strong> ingrediente${max-count!==1?"s":""}</span><span id="ing-count">${count} / ${max}</span>`;
+  } else if(extras > 0){
+    contador.innerHTML = `<span><strong class="alerta">${extras} extra${extras!==1?"s":""}</strong> (+$${(extras*constructorActivo.precioPorExtra).toLocaleString("es-CL")})</span><span id="ing-count">${count}</span>`;
+  } else {
+    contador.innerHTML = `<span>✓ Ingredientes seleccionados</span><span id="ing-count">${count} / ${max}</span>`;
+  }
+}
+
+function actualizarResumenConstructor(){
+  if(!constructorActivo) return;
+  const max = constructorActivo.ingredientesIncluidos;
+  const tallas = constructorActivo.tallas;
+  const precioBase = consTallaSeleccionada !== null ? tallas[consTallaSeleccionada].precio : 0;
+  const extras = Math.max(0, consIngredientes.length-max);
+  const precioTotal = precioBase + (extras*constructorActivo.precioPorExtra);
+  const names = consIngredientes.map(idx => constructorActivo.ingredientes[idx]);
+  const resumenIng = document.getElementById("resumen-ing");
+  resumenIng.innerHTML = names.length===0 ? "Sin ingredientes seleccionados"
+    : `<strong>${consTallaSeleccionada!==null?tallas[consTallaSeleccionada].nombre:"–"}</strong> · ${names.join(", ")}`;
+  document.getElementById("resumen-precio").textContent = "$ "+precioTotal.toLocaleString("es-CL");
+  const btn = document.getElementById("btn-agregar");
+  const listo = consTallaSeleccionada !== null && consIngredientes.length >= max;
+  btn.disabled = !listo;
+  btn.textContent = consTallaSeleccionada===null ? "Elige un tamaño"
+    : consIngredientes.length<max ? `Elige ${max-consIngredientes.length} ingrediente${max-consIngredientes.length!==1?"s":""} más`
+    : "+ Agregar al pedido";
+}
+
+function agregarDesdConstructor(){
+  if(!constructorActivo || consTallaSeleccionada===null) return;
+  const max = constructorActivo.ingredientesIncluidos;
+  if(consIngredientes.length < max){ mostrarToast("Elige "+(max-consIngredientes.length)+" ingrediente(s) más"); return; }
+  const talla = constructorActivo.tallas[consTallaSeleccionada];
+  const extras = Math.max(0, consIngredientes.length-max);
+  const precioTotal = talla.precio + (extras*constructorActivo.precioPorExtra);
+  const ingsNombres = consIngredientes.map(idx => constructorActivo.ingredientes[idx]);
+  const nombre = `${consItem.name} ${talla.nombre}`;
+  const detalle = ingsNombres.join(", ")+(extras>0?` (+${extras} extra)`:"");
+  pedido.push({ uid:pedidoIdCounter++, itemId:consItem.id, item:consItem, qty:1, nota:detalle, esConstructor:true, nombre, detalle, precio:precioTotal, talla:talla.nombre, ingredientes:ingsNombres });
+  actualizarCardConstructor(consItem.id);
+  actualizarBarra();
+  cerrarConstructor();
+  mostrarToast("✓ "+nombre+" agregada al pedido");
+}
+
+function actualizarCardConstructor(id){
+  const card = document.getElementById("card-"+id);
+  if(!card) return;
+  const itemsEnPedido = pedido.filter(p => p.itemId===id);
+  const total = itemsEnPedido.reduce((s,p) => s+p.qty, 0);
+  const overlay = card.querySelector(".check-overlay");
+  if(overlay){
+    overlay.style.opacity = total>0 ? "1" : "0";
+    const mark = overlay.querySelector(".check-mark");
+    if(mark) mark.innerHTML = total>0 ? `✓ ${total}` : "✓";
+  }
+}
+
+function cerrarConstructor(){ document.getElementById("modal-constructor").classList.remove("visible"); constructorActivo=null; }
+function cerrarConstructorSiFondo(e){ if(e.target===document.getElementById("modal-constructor")) cerrarConstructor(); }
 
 function actualizarBarra(){
   const bar = document.getElementById("pedido-bar");
   const resumen = document.getElementById("bar-resumen");
   const btnEnviar = document.getElementById("btn-enviar");
-  const ids = Object.keys(pedido);
-  if(ids.length === 0){ bar.classList.remove("visible"); return; }
+  if(pedido.length===0){ bar.classList.remove("visible"); return; }
   bar.classList.add("visible");
-  const totalPlatos = ids.reduce((s, id) => s + pedido[id].qty, 0);
-  const nombres = ids.slice(0,2).map(id => pedido[id].item.name).join(", ");
+  const totalPlatos = pedido.reduce((s,p) => s+p.qty, 0);
+  const nombres = pedido.slice(0,2).map(p => p.nombre||p.item.name).join(", ");
   const mesa = document.getElementById("mesa-input").value;
-  resumen.innerHTML = `<strong>${totalPlatos} plato${totalPlatos!==1?"s":""}</strong> — ${nombres}${ids.length>2?" y más...":""}`;
+  resumen.innerHTML = `<strong>${totalPlatos} plato${totalPlatos!==1?"s":""}</strong> — ${nombres}${pedido.length>2?" y más...":""}`;
   btnEnviar.disabled = !mesa;
-  btnEnviar.textContent = mesa
-    ? `✓ Enviar pedido a cocina — Mesa ${mesa}`
-    : "✓ Enviar pedido (ingresa mesa primero)";
+  btnEnviar.textContent = mesa ? `✓ Enviar pedido a cocina — Mesa ${mesa}` : "✓ Enviar pedido (ingresa mesa primero)";
 }
 
 function abrirModal(){
   const modalItems = document.getElementById("modal-items");
-  const ids = Object.keys(pedido);
   let total = 0;
-  modalItems.innerHTML = ids.map(id => {
-    const { item, qty, nota } = pedido[id];
-    const precio = Number(item.etiqueta1 ? item.precio1 : item.price);
-    const subtotal = precio * qty;
-    total += subtotal;
-    return `
-    <div class="modal-item">
-      <div>
-        <div class="modal-item-name">${item.name}</div>
-        ${nota ? `<div class="modal-item-nota">📝 ${nota}</div>` : ""}
+  modalItems.innerHTML = pedido.map(p => {
+    const subtotal = p.precio*p.qty; total += subtotal;
+    return `<div class="modal-item">
+      <div style="flex:1;min-width:0">
+        <div class="modal-item-name">${p.nombre||p.item.name}</div>
+        ${p.detalle?`<div class="modal-item-detail">📝 ${p.detalle}</div>`:""}
+        ${p.nota&&!p.detalle?`<div class="modal-item-detail">📝 ${p.nota}</div>`:""}
       </div>
-      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-        <span class="modal-item-qty">x${qty}</span>
-        <span class="modal-item-precio">${precio ? "$ " + subtotal.toLocaleString("es-CL") : "—"}</span>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <span class="modal-item-qty">x${p.qty}</span>
+        <span class="modal-item-precio">${p.precio?"$ "+subtotal.toLocaleString("es-CL"):"—"}</span>
+        <button class="modal-item-remove" onclick="eliminarDelPedido(${p.uid})">✕</button>
       </div>
     </div>`;
   }).join("");
-  document.getElementById("modal-total-precio").textContent =
-    total > 0 ? "$ " + total.toLocaleString("es-CL") : "—";
+  document.getElementById("modal-total-precio").textContent = total>0?"$ "+total.toLocaleString("es-CL"):"—";
   document.getElementById("modal-overlay").classList.add("visible");
 }
 
+function eliminarDelPedido(uid){
+  const idx = pedido.findIndex(p => p.uid===uid);
+  if(idx<0) return;
+  const removed = pedido[idx];
+  pedido.splice(idx,1);
+  if(removed.esConstructor) actualizarCardConstructor(removed.itemId);
+  else actualizarCard(removed.itemId);
+  actualizarBarra();
+  abrirModal();
+}
+
 function cerrarModal(){ document.getElementById("modal-overlay").classList.remove("visible"); }
-function cerrarModalSiFondo(e){ if(e.target === document.getElementById("modal-overlay")) cerrarModal(); }
+function cerrarModalSiFondo(e){ if(e.target===document.getElementById("modal-overlay")) cerrarModal(); }
 
 function limpiarPedido(){
-  pedido = {};
+  pedido=[];
   cerrarModal();
-  renderMenu(document.querySelector(".cat-btn.active")?.innerText.split(" (")[0] || "Todo");
+  renderMenu(document.querySelector(".cat-btn.active")?.innerText.split(" (")[0]||"Todo");
   actualizarBarra();
 }
 
 async function enviarPedido(){
   const mesa = document.getElementById("mesa-input").value;
   if(!mesa){ mostrarToast("Ingresa el número de mesa primero"); return; }
-  const ids = Object.keys(pedido);
-  if(ids.length === 0){ mostrarToast("Selecciona al menos un plato"); return; }
-
+  if(pedido.length===0){ mostrarToast("Selecciona al menos un plato"); return; }
   const btnEnviar = document.getElementById("btn-enviar");
-  btnEnviar.disabled = true;
-  btnEnviar.textContent = "Enviando...";
-
-  const platos = ids.map(id => {
-    const { item, qty, nota } = pedido[id];
-    return {
-      nombre: item.name,
-      cantidad: qty,
-      precio: item.etiqueta1 ? item.precio1 : item.price,
-      nota: nota || ""
-    };
-  });
-
-  const payload = {
-    mesa,
-    hora: new Date().toLocaleTimeString("es-CL", { hour:"2-digit", minute:"2-digit" }),
-    platos,
-    total: platos.reduce((s, p) => s + (Number(p.precio) * p.cantidad), 0)
-  };
-
+  btnEnviar.disabled = true; btnEnviar.textContent = "Enviando...";
+  const platos = pedido.map(p => ({ nombre:p.nombre||p.item.name, cantidad:p.qty, precio:p.precio, nota:p.nota||"", ingredientes:p.ingredientes?p.ingredientes.join(", "):"" }));
+  const payload = { mesa, hora:new Date().toLocaleTimeString("es-CL",{hour:"2-digit",minute:"2-digit"}), platos, total:platos.reduce((s,p) => s+(Number(p.precio)*p.cantidad),0) };
   try{
-    await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
-    });
+    await fetch(APPS_SCRIPT_URL, { method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload) });
     mostrarToast(`✓ Pedido enviado — Mesa ${mesa}`);
-    pedido = {};
-    document.getElementById("mesa-input").value = "";
-    renderMenu(document.querySelector(".cat-btn.active")?.innerText.split(" (")[0] || "Todo");
-    actualizarBarra();
-    cerrarModal();
+    pedido=[];
+    document.getElementById("mesa-input").value="";
+    renderMenu(document.querySelector(".cat-btn.active")?.innerText.split(" (")[0]||"Todo");
+    actualizarBarra(); cerrarModal();
   } catch(err){
-    console.error(err);
-    mostrarToast("Error al enviar. Intenta de nuevo.");
-    btnEnviar.disabled = false;
-    btnEnviar.textContent = `✓ Enviar pedido a cocina — Mesa ${mesa}`;
+    console.error(err); mostrarToast("Error al enviar. Intenta de nuevo.");
+    btnEnviar.disabled=false; btnEnviar.textContent=`✓ Enviar pedido a cocina — Mesa ${mesa}`;
   }
 }
 
 function mostrarToast(msg){
   const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(() => t.classList.remove("show"), 3000);
+  t.textContent=msg; t.classList.add("show");
+  setTimeout(()=>t.classList.remove("show"),3000);
 }
 
 document.getElementById("search").addEventListener("input", () => {
   const active = document.querySelector(".cat-btn.active");
   renderMenu(active ? active.innerText.split(" (")[0] : "Todo");
 });
-
 document.getElementById("mesa-input").addEventListener("input", actualizarBarra);
-
 load();
 </script>
 </body>
