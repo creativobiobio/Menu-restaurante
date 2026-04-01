@@ -12,6 +12,8 @@
             --negro-tarjeta: #252525;
             --blanco: #ffffff;
             --gris: #888;
+            --rojo: #e74c3c;
+            --verde: #2ecc71;
         }
 
         body {
@@ -20,8 +22,8 @@
             font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 15px;
-            padding-bottom: 90px; /* Espacio para el pie de página fijo */
-            -webkit-tap-highlight-color: transparent; /* Quita el destello azul al tocar en móviles */
+            padding-bottom: 90px;
+            -webkit-tap-highlight-color: transparent;
         }
 
         header {
@@ -54,7 +56,6 @@
             font-size: 1em;
         }
 
-        /* Filtros de Categorías Optimizados para Táctil */
         .filtros-container {
             display: flex;
             gap: 10px;
@@ -62,7 +63,7 @@
             padding-bottom: 10px;
             margin-bottom: 15px;
             scrollbar-width: none; 
-            -webkit-overflow-scrolling: touch; /* Scroll fluido en iOS */
+            -webkit-overflow-scrolling: touch;
         }
         .filtros-container::-webkit-scrollbar { display: none; }
 
@@ -85,7 +86,6 @@
             color: var(--negro-fondo);
         }
 
-        /* Ajuste de Grid para Móviles */
         .menu-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -102,187 +102,128 @@
             flex-direction: column;
         }
 
-        .card.agotado {
-            opacity: 0.5;
-            filter: grayscale(1);
-            pointer-events: none;
-        }
+        .card.agotado { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
 
         .agotado-badge {
-            display: none;
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: #e74c3c;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-weight: bold;
-            font-size: 0.8em;
-            letter-spacing: 1px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            display: none; position: absolute; top: 10px; right: 10px;
+            background: var(--rojo); color: white; padding: 5px 10px;
+            border-radius: 5px; font-weight: bold; font-size: 0.8em;
+            letter-spacing: 1px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
-
         .card.agotado .agotado-badge { display: block; }
 
         .categoria-label {
-            color: var(--gris);
-            font-size: 0.75em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 5px;
+            color: var(--gris); font-size: 0.75em; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 5px;
         }
 
         .card h3 {
-            color: var(--oro);
-            margin: 0 0 5px 0;
-            font-family: 'Playfair Display', serif;
-            font-size: 1.3em;
-            line-height: 1.2;
+            color: var(--oro); margin: 0 0 5px 0;
+            font-family: 'Playfair Display', serif; font-size: 1.3em; line-height: 1.2;
         }
 
         .precio {
-            font-weight: 600;
-            color: var(--blanco);
-            font-size: 1.2em;
-            margin-bottom: 10px;
-        }
-
-        .seccion-ingredientes {
-            font-size: 0.9em;
-            margin-bottom: 10px;
+            font-weight: 600; color: var(--blanco); font-size: 1.2em; margin-bottom: 10px;
         }
 
         .check-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 15px;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border-radius: 5px;
-            border: 1px solid #333;
+            display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px;
+            padding: 12px; background: rgba(0,0,0,0.3); border-radius: 5px; border: 1px solid #333;
         }
 
-        /* Checkboxes más grandes para dedos */
-        label {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            width: 100%; /* Una opción por línea en móvil para no equivocarse */
-        }
-
-        input[type="checkbox"] {
-            transform: scale(1.3);
-            margin: 0 5px 0 0;
-            accent-color: var(--oro);
-        }
+        label { display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; }
+        input[type="checkbox"] { transform: scale(1.3); margin: 0 5px 0 0; accent-color: var(--oro); }
 
         .input-notas {
-            width: 100%;
-            box-sizing: border-box;
-            margin-top: auto;
-            font-size: 0.9em;
-            resize: none;
-            height: 50px;
-            margin-bottom: 15px;
+            width: 100%; box-sizing: border-box; margin-top: auto; font-size: 0.9em;
+            resize: none; height: 50px; margin-bottom: 15px;
         }
 
-        .acciones-container {
-            display: flex;
-            gap: 10px;
-            align-items: stretch;
-        }
+        .acciones-container { display: flex; gap: 10px; align-items: stretch; }
 
         .control-cantidad {
-            display: flex;
-            align-items: center;
-            background: var(--negro-fondo);
-            border: 1px solid var(--oro);
-            border-radius: 5px;
-            overflow: hidden;
+            display: flex; align-items: center; background: var(--negro-fondo);
+            border: 1px solid var(--oro); border-radius: 5px; overflow: hidden;
         }
 
-        /* Botones más amigables al tacto */
         .btn-cant {
-            background: transparent;
-            color: var(--oro);
-            border: none;
-            padding: 12px 18px;
-            font-size: 1.3em;
-            cursor: pointer;
-            font-weight: bold;
+            background: transparent; color: var(--oro); border: none; padding: 12px 18px;
+            font-size: 1.3em; cursor: pointer; font-weight: bold;
         }
-        
         .btn-cant:active { background: rgba(212, 175, 55, 0.2); }
 
-        .num-cant {
-            color: var(--blanco);
-            padding: 0 5px;
-            font-weight: 600;
-            min-width: 25px;
-            text-align: center;
-            font-size: 1.1em;
-        }
+        .num-cant { color: var(--blanco); padding: 0 5px; font-weight: 600; min-width: 25px; text-align: center; font-size: 1.1em; }
 
         .btn-agregar {
-            background: var(--oro);
-            color: var(--negro-fondo);
-            border: none;
-            padding: 12px;
-            font-weight: 700;
-            border-radius: 5px;
-            cursor: pointer;
-            flex-grow: 1;
-            transition: background 0.3s;
-            text-transform: uppercase;
-            font-size: 0.95em;
+            background: var(--oro); color: var(--negro-fondo); border: none; padding: 12px;
+            font-weight: 700; border-radius: 5px; cursor: pointer; flex-grow: 1;
+            text-transform: uppercase; font-size: 0.95em;
         }
 
-        #resumen-pedido {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: var(--oro);
-            color: var(--negro-fondo);
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: bold;
-            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
-            z-index: 100;
+        /* --- NUEVO: BARRA INFERIOR Y MODAL DEL CARRITO --- */
+        #barra-inferior {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: var(--negro-tarjeta); border-top: 2px solid var(--oro);
+            padding: 15px 20px; display: flex; justify-content: space-between;
+            align-items: center; cursor: pointer; z-index: 90;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.8);
         }
 
-        #totalItems {
-            font-size: 1.1em;
+        .resumen-texto { display: flex; flex-direction: column; }
+        .resumen-items { font-size: 0.85em; color: var(--gris); font-weight: bold; }
+        .resumen-total { font-size: 1.3em; color: var(--oro); font-weight: bold; }
+        
+        .btn-ver-pedido {
+            background: var(--oro); color: var(--negro-fondo); border: none;
+            padding: 10px 20px; border-radius: 5px; font-weight: bold;
+            font-size: 1em; cursor: pointer; text-transform: uppercase;
         }
 
-        .btn-enviar {
-            background: var(--negro-fondo);
-            color: var(--oro);
-            border: 2px solid var(--negro-fondo);
-            padding: 12px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 0.9em;
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.8); display: none; justify-content: center;
+            align-items: flex-end; z-index: 100;
         }
 
-        /* Ajustes extra para teléfonos pequeños */
-        @media (max-width: 400px) {
-            .acciones-container {
-                flex-direction: column;
-            }
-            .control-cantidad {
-                justify-content: space-between;
-            }
-            .btn-cant {
-                padding: 10px 25px;
-            }
+        .modal-content {
+            background: var(--negro-fondo); width: 100%; max-height: 85vh;
+            border-radius: 20px 20px 0 0; border-top: 2px solid var(--oro);
+            padding: 20px; box-sizing: border-box; overflow-y: auto;
+            display: flex; flex-direction: column;
+        }
+
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #333; padding-bottom: 15px; margin-bottom: 15px;
+        }
+        .modal-header h2 { margin: 0; color: var(--oro); font-family: 'Playfair Display', serif; }
+        .btn-cerrar { background: transparent; color: var(--blanco); border: none; font-size: 2em; cursor: pointer; line-height: 1; }
+
+        .lista-carrito { flex-grow: 1; margin-bottom: 20px; }
+        
+        .item-carrito {
+            background: var(--negro-tarjeta); padding: 15px; border-radius: 8px;
+            margin-bottom: 10px; border-left: 3px solid var(--oro);
+        }
+        .item-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+        .item-precio { color: var(--oro); }
+        .item-detalles { font-size: 0.85em; color: #ccc; margin-bottom: 10px; line-height: 1.4; }
+        .mod-sin { color: var(--rojo); }
+        .mod-con { color: var(--verde); }
+        .mod-nota { color: #f1c40f; font-style: italic; }
+        
+        .btn-eliminar {
+            background: transparent; color: var(--rojo); border: 1px solid var(--rojo);
+            padding: 5px 10px; border-radius: 4px; font-size: 0.8em; cursor: pointer; width: 100%;
+        }
+
+        .modal-footer { border-top: 1px solid #333; padding-top: 15px; }
+        .modal-total { display: flex; justify-content: space-between; font-size: 1.5em; font-weight: bold; margin-bottom: 15px; }
+        
+        .btn-enviar-final {
+            background: var(--oro); color: var(--negro-fondo); border: none;
+            padding: 15px; width: 100%; font-size: 1.1em; font-weight: bold;
+            border-radius: 5px; cursor: pointer; text-transform: uppercase;
         }
     </style>
 </head>
@@ -297,14 +238,36 @@
     </header>
 
     <div id="filtrosCategorias" class="filtros-container"></div>
-
     <div class="menu-container" id="menuLista">
         <p style="text-align: center; width: 100%; color: var(--oro);">Cargando menú...</p>
     </div>
 
-    <div id="resumen-pedido">
-        <span id="totalItems">CARRITO: 0</span>
-        <button class="btn-enviar" onclick="enviarPedido()">ENVIAR A COCINA</button>
+    <div id="barra-inferior" onclick="abrirModal()">
+        <div class="resumen-texto">
+            <span class="resumen-items" id="txt-items">0 ITEMS</span>
+            <span class="resumen-total" id="txt-total-barra">$0</span>
+        </div>
+        <button class="btn-ver-pedido">VER PEDIDO</button>
+    </div>
+
+    <div id="modalCarrito" class="modal-overlay">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Resumen de Mesa</h2>
+                <button class="btn-cerrar" onclick="cerrarModal(event)">&times;</button>
+            </div>
+            
+            <div class="lista-carrito" id="contenedorItemsCarrito">
+                </div>
+
+            <div class="modal-footer">
+                <div class="modal-total">
+                    <span>TOTAL:</span>
+                    <span id="txt-total-modal" style="color: var(--oro);">$0</span>
+                </div>
+                <button class="btn-enviar-final" id="btn-enviar" onclick="enviarPedido()">CONFIRMAR Y ENVIAR</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -312,11 +275,15 @@
         let carrito = [];
         let menuGlobal = [];
 
+        // Utilidad para formatear a Pesos Chilenos (CLP)
+        function formatoCLP(valor) {
+            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(valor);
+        }
+
         async function inicializar() {
             try {
                 const res = await fetch(`${API_URL}?action=getMenu`);
                 menuGlobal = await res.json();
-                
                 renderizarFiltros();
                 renderizarMenu('Todas');
             } catch (error) {
@@ -327,11 +294,8 @@
         function renderizarFiltros() {
             const contenedor = document.getElementById('filtrosCategorias');
             const categorias = [...new Set(menuGlobal.map(p => p.categoria).filter(c => c))];
-            
             let html = `<button class="btn-filtro activo" onclick="filtrar('Todas', this)">Todas</button>`;
-            categorias.forEach(cat => {
-                html += `<button class="btn-filtro" onclick="filtrar('${cat}', this)">${cat}</button>`;
-            });
+            categorias.forEach(cat => { html += `<button class="btn-filtro" onclick="filtrar('${cat}', this)">${cat}</button>`; });
             contenedor.innerHTML = html;
         }
 
@@ -345,9 +309,7 @@
             const container = document.getElementById('menuLista');
             container.innerHTML = ''; 
 
-            const platosFiltrados = filtroCategoria === 'Todas' 
-                ? menuGlobal 
-                : menuGlobal.filter(p => p.categoria === filtroCategoria);
+            const platosFiltrados = filtroCategoria === 'Todas' ? menuGlobal : menuGlobal.filter(p => p.categoria === filtroCategoria);
 
             platosFiltrados.forEach((plato) => {
                 const index = menuGlobal.findIndex(p => p.nombre === plato.nombre);
@@ -363,11 +325,8 @@
                     htmlIngredientesBase = `
                         <strong style="color:var(--oro); display:block; margin-bottom:5px;">Quitar (Base):</strong>
                         <div class="check-group">
-                            ${basesValidas.map(ing => `
-                                <label><input type="checkbox" class="base" value="${ing}" checked> ${ing}</label>
-                            `).join('')}
-                        </div>
-                    `;
+                            ${basesValidas.map(ing => `<label><input type="checkbox" class="base" value="${ing}" checked> ${ing}</label>`).join('')}
+                        </div>`;
                 }
 
                 let htmlIngredientesExtra = '';
@@ -375,11 +334,8 @@
                     htmlIngredientesExtra = `
                         <strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras):</strong>
                         <div class="check-group">
-                            ${extrasValidos.map(ing => `
-                                <label><input type="checkbox" class="extra" value="${ing}"> ${ing}</label>
-                            `).join('')}
-                        </div>
-                    `;
+                            ${extrasValidos.map(ing => `<label><input type="checkbox" class="extra" value="${ing}"> ${ing}</label>`).join('')}
+                        </div>`;
                 }
 
                 card.innerHTML = `
@@ -387,13 +343,9 @@
                     <div class="categoria-label">${plato.categoria}</div>
                     <h3>${plato.nombre}</h3>
                     <p style="font-size: 0.85em; color: #bbb; margin-top: 0; line-height: 1.4;">${plato.descripcion}</p>
-                    <span class="precio">$${plato.precio}</span>
+                    <span class="precio">${formatoCLP(plato.precio)}</span>
                     
-                    <div class="seccion-ingredientes">
-                        ${htmlIngredientesBase}
-                        ${htmlIngredientesExtra}
-                    </div>
-
+                    <div class="seccion-ingredientes">${htmlIngredientesBase}${htmlIngredientesExtra}</div>
                     <textarea class="input-notas" id="notas-${index}" placeholder="Notas especiales (opcional)..."></textarea>
                     
                     <div class="acciones-container">
@@ -402,7 +354,7 @@
                             <span class="num-cant" id="cant-${index}">1</span>
                             <button class="btn-cant" onclick="cambiarCantidad(${index}, 1)">+</button>
                         </div>
-                        <button class="btn-agregar" id="btn-add-${index}" onclick="agregarAlPedido(${index}, '${plato.nombre}')">
+                        <button class="btn-agregar" id="btn-add-${index}" onclick="agregarAlPedido(${index}, '${plato.nombre}', ${plato.precio})">
                             ${estaAgotado ? 'AGOTADO' : 'AÑADIR'}
                         </button>
                     </div>
@@ -413,14 +365,11 @@
 
         function cambiarCantidad(index, cambio) {
             const spanCant = document.getElementById(`cant-${index}`);
-            let valorActual = parseInt(spanCant.innerText);
-            let nuevoValor = valorActual + cambio;
-            if (nuevoValor >= 1 && nuevoValor <= 20) {
-                spanCant.innerText = nuevoValor;
-            }
+            let nuevoValor = parseInt(spanCant.innerText) + cambio;
+            if (nuevoValor >= 1 && nuevoValor <= 20) spanCant.innerText = nuevoValor;
         }
 
-        function agregarAlPedido(index, nombre) {
+        function agregarAlPedido(index, nombre, precioBase) {
             const card = document.getElementById(`btn-add-${index}`).closest('.card');
             const notas = document.getElementById(`notas-${index}`).value;
             const cantidad = parseInt(document.getElementById(`cant-${index}`).innerText);
@@ -433,57 +382,112 @@
                     nombre: nombre,
                     notas: notas,
                     sin: quitados,
-                    con: agregados
+                    con: agregados,
+                    precio: parseInt(precioBase)
                 });
             }
 
-            document.getElementById('totalItems').innerText = `CARRITO: ${carrito.length}`;
+            actualizarBarraInferior();
             
+            // Animación de botón
             const btn = document.getElementById(`btn-add-${index}`);
             const textoOriginal = btn.innerText;
             btn.innerText = `¡+${cantidad} AÑADIDO!`;
             btn.style.background = "#fff";
             
+            // Reset de inputs
             document.getElementById(`notas-${index}`).value = '';
             document.getElementById(`cant-${index}`).innerText = '1';
             Array.from(card.querySelectorAll('.base')).forEach(c => c.checked = true);
             Array.from(card.querySelectorAll('.extra')).forEach(c => c.checked = false);
 
-            setTimeout(() => { 
-                btn.innerText = textoOriginal; 
-                btn.style.background = "var(--oro)"; 
-            }, 1000);
+            setTimeout(() => { btn.innerText = textoOriginal; btn.style.background = "var(--oro)"; }, 1000);
+        }
+
+        function actualizarBarraInferior() {
+            const totalItems = carrito.length;
+            const sumaTotal = carrito.reduce((acc, item) => acc + item.precio, 0);
+            
+            document.getElementById('txt-items').innerText = `${totalItems} ITEM${totalItems !== 1 ? 'S' : ''}`;
+            document.getElementById('txt-total-barra').innerText = formatoCLP(sumaTotal);
+        }
+
+        // --- LÓGICA DEL MODAL ---
+        function abrirModal() {
+            if (carrito.length === 0) {
+                alert("El carrito está vacío. Añade productos primero.");
+                return;
+            }
+            renderizarCarrito();
+            document.getElementById('modalCarrito').style.display = 'flex';
+        }
+
+        function cerrarModal(e) {
+            if(e) e.stopPropagation(); // Evita que el click en cerrar vuelva a abrir el modal
+            document.getElementById('modalCarrito').style.display = 'none';
+        }
+
+        function renderizarCarrito() {
+            const contenedor = document.getElementById('contenedorItemsCarrito');
+            let html = '';
+            let sumaTotal = 0;
+
+            carrito.forEach((item, index) => {
+                sumaTotal += item.precio;
+                
+                let detalles = '';
+                if(item.sin.length > 0) detalles += `<div class="mod-sin">- Sin: ${item.sin.join(', ')}</div>`;
+                if(item.con.length > 0) detalles += `<div class="mod-con">+ Extra: ${item.con.join(', ')}</div>`;
+                if(item.notas) detalles += `<div class="mod-nota">📝 ${item.notas}</div>`;
+
+                html += `
+                <div class="item-carrito">
+                    <div class="item-header">
+                        <span>1x ${item.nombre}</span>
+                        <span class="item-precio">${formatoCLP(item.precio)}</span>
+                    </div>
+                    <div class="item-detalles">${detalles}</div>
+                    <button class="btn-eliminar" onclick="eliminarDelCarrito(${index})">Eliminar Plato</button>
+                </div>`;
+            });
+
+            contenedor.innerHTML = html;
+            document.getElementById('txt-total-modal').innerText = formatoCLP(sumaTotal);
+        }
+
+        function eliminarDelCarrito(index) {
+            carrito.splice(index, 1);
+            actualizarBarraInferior();
+            if (carrito.length === 0) {
+                cerrarModal();
+            } else {
+                renderizarCarrito(); // Recargar la vista si quedan items
+            }
         }
 
         async function enviarPedido() {
             const mesa = document.getElementById('numMesa').value;
-            if (!mesa || carrito.length === 0) {
-                alert("Por favor ingresa un número de mesa y añade al menos un producto.");
+            if (!mesa) {
+                alert("⚠️ ¡Te falta ingresar el NÚMERO DE MESA arriba!");
+                cerrarModal();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
                 return;
             }
 
-            const btnEnviar = document.querySelector('.btn-enviar');
-            btnEnviar.innerText = "ENVIANDO...";
+            const btnEnviar = document.getElementById('btn-enviar');
+            btnEnviar.innerText = "ENVIANDO A COCINA...";
             btnEnviar.disabled = true;
 
-            const payload = {
-                action: 'nuevoPedido',
-                mesa: mesa,
-                items: carrito
-            };
+            const payload = { action: 'nuevoPedido', mesa: mesa, items: carrito };
 
             try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    body: JSON.stringify(payload)
-                });
-
+                const response = await fetch(API_URL, { method: 'POST', body: JSON.stringify(payload) });
                 if (response.ok) {
-                    alert(`¡Pedido enviado a cocina (Mesa ${mesa})!`);
+                    alert(`✅ ¡Pedido para la Mesa ${mesa} enviado a cocina!`);
                     carrito = [];
-                    document.getElementById('totalItems').innerText = `CARRITO: 0`;
+                    actualizarBarraInferior();
                     document.getElementById('numMesa').value = '';
-                    
+                    cerrarModal();
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     renderizarMenu('Todas');
                     document.querySelectorAll('.btn-filtro').forEach(btn => {
@@ -492,9 +496,9 @@
                     });
                 }
             } catch (error) {
-                alert("Hubo un error al conectar con la base de datos.");
+                alert("Hubo un error de conexión.");
             } finally {
-                btnEnviar.innerText = "ENVIAR A COCINA";
+                btnEnviar.innerText = "CONFIRMAR Y ENVIAR";
                 btnEnviar.disabled = false;
             }
         }
