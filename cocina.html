@@ -19,7 +19,9 @@
         
         .items-container { flex-grow: 1; }
         .item-pedido { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--borde); }
-        .item-nombre { font-weight: bold; font-size: 1.2em; }
+        .item-nombre { font-weight: bold; font-size: 1.2em; line-height: 1.2; }
+        .item-categoria { display: block; color: var(--oro); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        
         .modificador { font-size: 1em; margin-left: 10px; font-weight: bold; }
         .modificador.quitar { color: #c0392b; } .modificador.agregar { color: #27ae60; } .modificador.base { color: #2980b9; }
         .nota { font-size: 0.95em; font-weight: bold; background: #ffeaa7; padding: 5px; margin-top: 5px; border-radius: 4px; color: #000; }
@@ -38,10 +40,13 @@
         .total-ventas { font-size: 2em; font-weight: bold; color: var(--verde); }
         
         .lista-ventas { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
-        .venta-item { background: #2d2d2d; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid var(--oro); }
-        .venta-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; color: #fff;}
-        .venta-mesa { color: var(--oro); }
-        .venta-precio { color: var(--verde); }
+        .venta-item { background: #2d2d2d; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid var(--oro); }
+        .venta-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; color: #fff; }
+        .venta-mesa { font-weight: bold; font-size: 1.1em; color: var(--oro); }
+        .venta-precio { font-weight: bold; color: var(--verde); font-size: 1.1em; }
+        
+        .btn-toggle-venta { background: rgba(212, 175, 55, 0.1); color: var(--oro); border: 1px dashed var(--oro); border-radius: 4px; cursor: pointer; width: 100%; text-align: center; padding: 8px; margin-top: 10px; font-size: 0.85em; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-toggle-venta:hover { background: rgba(212, 175, 55, 0.2); }
     </style>
 </head>
 <body>
@@ -57,14 +62,31 @@
     </div>
 
     <script>
-        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
         const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
         const ticketsAlertados = new Set(); 
         let cronometros = [];
+        
+        // Memoria para recordar qué tickets del historial expandiste
+        const ventasExpandidas = new Set();
 
         function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
+
+        function toggleVenta(id) {
+            const detalles = document.getElementById(`venta-detalles-${id}`);
+            const btn = document.getElementById(`btn-venta-${id}`);
+            
+            if (detalles.style.display === 'none') {
+                detalles.style.display = 'block';
+                ventasExpandidas.add(id);
+                if (btn) btn.innerHTML = 'Ocultar Detalles ▲';
+            } else {
+                detalles.style.display = 'none';
+                ventasExpandidas.delete(id);
+                if (btn) btn.innerHTML = 'Ver Detalles ▼';
+            }
+        }
 
         async function cargar() {
             try {
@@ -74,53 +96,75 @@
                 const cont = document.getElementById('contenedor-tickets'); 
                 const listaVentas = document.getElementById('lista-resumen');
                 
+                // Guardamos la posición del scroll del panel derecho antes de actualizar
+                const scrollPos = listaVentas.scrollTop;
+                
                 cont.innerHTML = '';
-                listaVentas.innerHTML = '';
+                let htmlVentas = '';
                 
                 cronometros.forEach(clearInterval);
                 cronometros = [];
 
                 let totalDia = 0;
-                let htmlVentas = '';
 
                 const pedidosActivos = pedidos.filter(p => p.estado === 'En preparación').reverse();
                 const todosLosPedidos = pedidos;
 
+                // 1. GENERAR HISTORIAL (PANEL DERECHO)
                 todosLosPedidos.forEach(p => {
                     let totalPedido = 0;
                     let conteoPlatos = {};
                     p.items.forEach(i => {
                         totalPedido += i.precio;
-                        // Agrupamos usando Categoría + Nombre
                         const cat = i.categoria || 'Varios';
                         const llave = `${cat}|||${i.nombre}`;
                         conteoPlatos[llave] = (conteoPlatos[llave] || 0) + 1;
                     });
                     
                     totalDia += totalPedido;
+                    const cantidadTotalItems = p.items.length;
 
                     let platosHTML = '';
                     for (const [llave, cant] of Object.entries(conteoPlatos)) {
                         const [categoria, nombre] = llave.split('|||');
-                        platosHTML += `<div style="font-size: 0.9em; color: #ccc;"><strong style="color:var(--oro)">[${categoria}]</strong> ${cant}x ${nombre}</div>`;
+                        platosHTML += `<div style="font-size: 0.9em; color: #ccc; margin-bottom: 4px;"><strong style="color:var(--oro)">[${categoria}]</strong> ${cant}x ${nombre}</div>`;
                     }
 
-                    const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(En cocina)</span>';
+                    const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(Cocina)</span>';
+
+                    // Lógica de colapso si hay más de 3 platos
+                    const esColapsable = cantidadTotalItems > 3;
+                    const estaExpandido = ventasExpandidas.has(p.id);
+                    
+                    let displayDetalles = esColapsable && !estaExpandido ? 'none' : 'block';
+                    let textoBoton = estaExpandido ? 'Ocultar Detalles ▲' : 'Ver Detalles ▼';
 
                     htmlVentas += `
                         <div class="venta-item">
-                            <div class="venta-top">
-                                <span class="venta-mesa">Mesa ${p.mesa} ${estadoHTML}</span>
+                            <div class="venta-top" ${esColapsable ? `onclick="toggleVenta('${p.id}')" style="cursor:pointer;"` : ''}>
+                                <div style="display:flex; flex-direction:column;">
+                                    <span class="venta-mesa">Mesa ${p.mesa} ${estadoHTML}</span>
+                                    <span style="font-size:0.85em; color:#aaa; font-weight:normal;">${cantidadTotalItems} item${cantidadTotalItems !== 1 ? 's' : ''} en total</span>
+                                </div>
                                 <span class="venta-precio">${formatoCLP(totalPedido)}</span>
                             </div>
-                            ${platosHTML}
+                            
+                            <div id="venta-detalles-${p.id}" style="display:${displayDetalles}; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+                                ${platosHTML}
+                            </div>
+                            
+                            ${esColapsable ? `<button onclick="toggleVenta('${p.id}')" id="btn-venta-${p.id}" class="btn-toggle-venta">${textoBoton}</button>` : ''}
                         </div>
                     `;
                 });
 
                 document.getElementById('total-ventas-hoy').innerText = formatoCLP(totalDia);
                 listaVentas.innerHTML = htmlVentas;
+                
+                // Restauramos el scroll para que no salte al actualizar
+                listaVentas.scrollTop = scrollPos;
 
+                // 2. GENERAR TICKETS DE COCINA (PANEL IZQUIERDO)
                 pedidosActivos.forEach(p => {
                     const t = document.createElement('div'); 
                     t.className = 'ticket'; 
@@ -130,11 +174,23 @@
                     let itemsH = '';
                     p.items.forEach(i => {
                         let modsH = '';
+                        const cat = i.categoria || 'Varios';
+                        
                         if(i.baseE?.length) i.baseE.forEach(x => modsH += `<div class="modificador base">🥣 BASE: ${x.toUpperCase()}</div>`);
                         if(i.protE?.length) i.protE.forEach(x => modsH += `<div class="modificador base">🥩 PROT: ${x.toUpperCase()}</div>`);
                         if(i.sin?.length) i.sin.forEach(x => modsH += `<div class="modificador quitar">- SIN ${x.toUpperCase()}</div>`);
                         if(i.con?.length) i.con.forEach(x => modsH += `<div class="modificador agregar">+ EXTRA ${x.toUpperCase()}</div>`);
-                        itemsH += `<div class="item-pedido"><div class="item-nombre">1x ${i.nombre}</div>${modsH}${i.notas?`<div class="nota">📝 ${i.notas}</div>`:''}</div>`;
+                        
+                        // Añadimos la categoría como etiqueta superior al nombre del plato
+                        itemsH += `
+                            <div class="item-pedido">
+                                <div class="item-nombre">
+                                    <span class="item-categoria">${cat}</span>
+                                    1x ${i.nombre}
+                                </div>
+                                ${modsH}
+                                ${i.notas?`<div class="nota">📝 ${i.notas}</div>`:''}
+                            </div>`;
                     });
 
                     const horaPed = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
