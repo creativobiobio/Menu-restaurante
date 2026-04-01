@@ -109,8 +109,8 @@
     </div>
 
     <script>
-        // TU URL EXACTA
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxXQAHi_yvIpViecP0MbBme6WNdGkpsXhCK_vQjzlG_kXwaOgdV-GERyjdb6HAR-0N2kQ/exec';
+        // LA NUEVA URL HA SIDO INTEGRADA AQUÍ:
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
         let carrito = []; let menuGlobal = [];
         function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
@@ -145,7 +145,6 @@
                 body.classList.remove('visible');
                 btn.innerHTML = 'Personalizar Plato <span>▼</span>';
             } else {
-                // Opcional: Cerrar las demás tarjetas al abrir una nueva
                 document.querySelectorAll('.card-body').forEach(b => b.classList.remove('visible'));
                 document.querySelectorAll('.btn-desplegar').forEach(b => b.innerHTML = 'Personalizar Plato <span>▼</span>');
                 
@@ -193,7 +192,6 @@
                 if (catLower.includes('bowl')) textoExtra = "(Desde el 5to +$1.000)";
                 else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(Desde el 4to +$1.000)";
 
-                // Si no hay ninguna casilla para marcar, podemos ocultar esa sección
                 const tieneOpciones = bV.length > 0 || eV.length > 0 || bBowl.length > 0 || pBowl.length > 0;
 
                 card.innerHTML = `
@@ -246,7 +244,6 @@
             const btn = document.getElementById(`btn-add-${idx}`); 
             btn.innerText = `¡+${c} AÑADIDO!`; btn.style.background = "#fff";
             
-            // Reseteo visual y colapso automático
             document.getElementById(`notas-${idx}`).value = '';
             document.getElementById(`cant-${idx}`).innerText = '1';
             Array.from(card.querySelectorAll('.base')).forEach(x => x.checked = true);
@@ -258,7 +255,7 @@
             setTimeout(() => { 
                 btn.innerText = "AÑADIR"; 
                 btn.style.background = "var(--oro)"; 
-                toggleOpciones(idx); // Cierra la tarjeta automáticamente
+                toggleOpciones(idx); 
             }, 800);
         }
 
