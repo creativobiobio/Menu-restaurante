@@ -6,40 +6,125 @@
     <title>Newen Creativo - KDS Cocina</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --fondo: #eef2f5; --blanco: #ffffff; --texto: #2c3e50; --borde: #bdc3c7; --rojo-alerta: #e74c3c; --verde-listo: #27ae60; }
-        body { background-color: var(--fondo); color: var(--texto); font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; height: 100vh; box-sizing: border-box; }
-        .panel-tickets { display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow-y: auto; }
-        .ticket { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; width: 280px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; display: flex; flex-direction: column; }
-        .ticket-header { display: flex; justify-content: space-between; font-size: 1.3em; font-weight: bold; border-bottom: 2px solid var(--texto); padding-bottom: 10px; margin-bottom: 15px; }
+        :root { --fondo: #eef2f5; --blanco: #ffffff; --texto: #2c3e50; --borde: #bdc3c7; --amarillo: #f1c40f; --rojo: #e74c3c; --verde: #27ae60; --oro: #D4AF37; }
+        body { background-color: var(--fondo); color: var(--texto); font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; height: 100vh; box-sizing: border-box; }
+        
+        .panel-tickets { display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow-y: auto; padding-right: 10px; }
+        .ticket { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; width: 280px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: background 0.5s; }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--texto); padding-bottom: 10px; margin-bottom: 15px; }
+        .mesa-num { font-size: 1.4em; font-weight: bold; }
+        .tiempo-info { display: flex; flex-direction: column; align-items: flex-end; }
+        .cronometro { font-size: 1.3em; font-weight: bold; }
+        .hora-pedido { font-size: 0.8em; color: #7f8c8d; }
+        
+        .items-container { flex-grow: 1; }
         .item-pedido { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--borde); }
         .item-nombre { font-weight: bold; font-size: 1.2em; }
         .modificador { font-size: 1em; margin-left: 10px; font-weight: bold; }
         .modificador.quitar { color: #c0392b; } .modificador.agregar { color: #27ae60; } .modificador.base { color: #2980b9; }
-        .nota { font-size: 0.95em; font-weight: bold; background: #f1c40f; padding: 5px; margin-top: 5px; border-radius: 4px; }
-        .btn-listo { width: 100%; background: var(--verde-listo); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; }
-        .panel-resumen { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; padding: 20px; overflow-y: auto; }
-        .resumen-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
-        @keyframes parpadeoRojo { 0% { background-color: var(--blanco); } 50% { background-color: #ffcccc; } 100% { background-color: var(--blanco); } }
+        .nota { font-size: 0.95em; font-weight: bold; background: #ffeaa7; padding: 5px; margin-top: 5px; border-radius: 4px; color: #000; }
+        .btn-listo { width: 100%; background: var(--verde); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        
+        .preventivo { background-color: #fffacd; border-color: var(--amarillo); }
+        .preventivo .ticket-header { color: #b8860b; border-color: #b8860b; }
+        
+        @keyframes parpadeoRojo { 0% { background-color: var(--blanco); } 50% { background-color: #ffcccc; border-color: var(--rojo); } 100% { background-color: var(--blanco); } }
         .urgente { animation: parpadeoRojo 1.5s infinite; }
+        .urgente .ticket-header { color: var(--rojo); border-color: var(--rojo); }
+
+        .panel-resumen { background: var(--negro-tarjeta, #1a1a1a); color: var(--blanco); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
+        .resumen-header { border-bottom: 2px solid var(--oro); padding-bottom: 15px; margin-bottom: 15px; text-align: center; }
+        .resumen-header h2 { margin: 0 0 5px 0; color: var(--oro); font-family: 'Playfair Display', serif; }
+        .total-ventas { font-size: 2em; font-weight: bold; color: var(--verde); }
+        
+        .lista-ventas { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .venta-item { background: #2d2d2d; padding: 10px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid var(--oro); }
+        .venta-top { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px; color: #fff;}
+        .venta-mesa { color: var(--oro); }
+        .venta-precio { color: var(--verde); }
     </style>
 </head>
 <body>
     <div class="panel-tickets" id="contenedor-tickets"></div>
-    <div class="panel-resumen"><h2>Cola</h2><div id="lista-resumen"></div></div>
+    
+    <div class="panel-resumen">
+        <div class="resumen-header">
+            <h2>Ventas del Día</h2>
+            <div class="total-ventas" id="total-ventas-hoy">$0</div>
+        </div>
+        <div class="lista-ventas" id="lista-resumen">
+            </div>
+    </div>
+
     <script>
-        // URL CONECTADA EXACTAMENTE A TU BASE DE DATOS
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxXQAHi_yvIpViecP0MbBme6WNdGkpsXhCK_vQjzlG_kXwaOgdV-GERyjdb6HAR-0N2kQ/exec';
+        // LA NUEVA URL HA SIDO INTEGRADA AQUÍ:
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
+        const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        const ticketsAlertados = new Set(); 
+        let cronometros = [];
+
+        function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
+
         async function cargar() {
             try {
-                const res = await fetch(`${API_URL}?action=getPedidos`); const pedidos = await res.json();
-                const cont = document.getElementById('contenedor-tickets'); cont.innerHTML = '';
-                let resumen = {};
-                pedidos.reverse().forEach(p => {
-                    const t = document.createElement('div'); t.className = 'ticket'; t.dataset.id = p.id; t.dataset.time = p.timestamp;
+                const res = await fetch(`${API_URL}?action=getPedidos`); 
+                const pedidos = await res.json();
+                
+                const cont = document.getElementById('contenedor-tickets'); 
+                const listaVentas = document.getElementById('lista-resumen');
+                
+                cont.innerHTML = '';
+                listaVentas.innerHTML = '';
+                
+                cronometros.forEach(clearInterval);
+                cronometros = [];
+
+                let totalDia = 0;
+                let htmlVentas = '';
+
+                const pedidosActivos = pedidos.filter(p => p.estado === 'En preparación').reverse();
+                const todosLosPedidos = pedidos;
+
+                todosLosPedidos.forEach(p => {
+                    let totalPedido = 0;
+                    let conteoPlatos = {};
+                    p.items.forEach(i => {
+                        totalPedido += i.precio;
+                        conteoPlatos[i.nombre] = (conteoPlatos[i.nombre] || 0) + 1;
+                    });
+                    
+                    totalDia += totalPedido;
+
+                    let platosHTML = '';
+                    for (const [nombre, cant] of Object.entries(conteoPlatos)) {
+                        platosHTML += `<div style="font-size: 0.9em; color: #ccc;">${cant}x ${nombre}</div>`;
+                    }
+
+                    const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(En cocina)</span>';
+
+                    htmlVentas += `
+                        <div class="venta-item">
+                            <div class="venta-top">
+                                <span class="venta-mesa">Mesa ${p.mesa} ${estadoHTML}</span>
+                                <span class="venta-precio">${formatoCLP(totalPedido)}</span>
+                            </div>
+                            ${platosHTML}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('total-ventas-hoy').innerText = formatoCLP(totalDia);
+                listaVentas.innerHTML = htmlVentas;
+
+                pedidosActivos.forEach(p => {
+                    const t = document.createElement('div'); 
+                    t.className = 'ticket'; 
+                    t.dataset.id = p.id; 
+                    t.dataset.time = p.timestamp;
+
                     let itemsH = '';
                     p.items.forEach(i => {
-                        resumen[i.nombre] = (resumen[i.nombre] || 0) + 1;
                         let modsH = '';
                         if(i.baseE?.length) i.baseE.forEach(x => modsH += `<div class="modificador base">🥣 BASE: ${x.toUpperCase()}</div>`);
                         if(i.protE?.length) i.protE.forEach(x => modsH += `<div class="modificador base">🥩 PROT: ${x.toUpperCase()}</div>`);
@@ -47,22 +132,64 @@
                         if(i.con?.length) i.con.forEach(x => modsH += `<div class="modificador agregar">+ EXTRA ${x.toUpperCase()}</div>`);
                         itemsH += `<div class="item-pedido"><div class="item-nombre">1x ${i.nombre}</div>${modsH}${i.notas?`<div class="nota">📝 ${i.notas}</div>`:''}</div>`;
                     });
-                    const h = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    t.innerHTML = `<div class="ticket-header"><span>Mesa: ${p.mesa}</span><span>⏱️ ${h}</span></div>${itemsH}<button class="btn-listo" onclick="marcar('${p.id}')">LISTO</button>`;
+
+                    const horaPed = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    t.innerHTML = `
+                        <div class="ticket-header">
+                            <span class="mesa-num">Mesa: ${p.mesa}</span>
+                            <div class="tiempo-info">
+                                <span class="cronometro" id="timer-${p.id}">00:00</span>
+                                <span class="hora-pedido">Ped: ${horaPed}</span>
+                            </div>
+                        </div>
+                        <div class="items-container">${itemsH}</div>
+                        <button class="btn-listo" onclick="marcar('${p.id}')">LISTO ✔️</button>
+                    `;
                     cont.appendChild(t);
+
+                    actualizarCronometro(p.id, p.timestamp);
+                    const intervalo = setInterval(() => actualizarCronometro(p.id, p.timestamp), 1000);
+                    cronometros.push(intervalo);
                 });
-                const lr = document.getElementById('lista-resumen'); lr.innerHTML = '';
-                for (const [k, v] of Object.entries(resumen)) { lr.innerHTML += `<div class="resumen-item"><span>${k}</span><strong>${v}</strong></div>`; }
-                verificar();
-            } catch (e) {}
+
+            } catch (e) { console.error("Error cargando pedidos."); }
         }
-        async function marcar(id) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'actualizarEstado', idPedido: id, nuevoEstado: 'Listo' }) }); cargar(); }
-        function verificar() {
+
+        function actualizarCronometro(id, timestampStr) {
+            const ticket = document.querySelector(`.ticket[data-id="${id}"]`);
+            if (!ticket) return;
+
             const ahora = new Date().getTime();
-            document.querySelectorAll('.ticket').forEach(t => {
-                if ((ahora - new Date(t.dataset.time).getTime()) / 60000 >= 20) t.classList.add('urgente');
-            });
+            const tiempoPedido = new Date(timestampStr).getTime();
+            const diffMs = ahora - tiempoPedido;
+            
+            const minutos = Math.floor(diffMs / 60000);
+            const segundos = Math.floor((diffMs % 60000) / 1000);
+            
+            const timerEl = document.getElementById(`timer-${id}`);
+            if(timerEl) timerEl.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+
+            if (minutos >= 20) {
+                ticket.classList.remove('preventivo');
+                ticket.classList.add('urgente');
+                if (!ticketsAlertados.has(id)) {
+                    ticketsAlertados.add(id);
+                    audioAlerta.play().catch(e => console.log("Audio bloqueado"));
+                    setTimeout(() => { audioAlerta.pause(); audioAlerta.currentTime = 0; }, 5000);
+                }
+            } else if (minutos >= 10) {
+                ticket.classList.add('preventivo');
+            }
         }
+
+        async function marcar(id) { 
+            const ticket = document.querySelector(`.ticket[data-id="${id}"]`);
+            if(ticket) ticket.style.opacity = '0.5';
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'actualizarEstado', idPedido: id, nuevoEstado: 'Listo' }) }); 
+            cargar(); 
+        }
+
         window.onload = () => { cargar(); setInterval(cargar, 10000); };
     </script>
 </body>
