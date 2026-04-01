@@ -22,7 +22,7 @@
             margin: 0;
             padding: 20px;
             display: grid;
-            grid-template-columns: 1fr 300px; /* Panel tickets ocupa resto, resumen 300px */
+            grid-template-columns: 1fr 300px;
             gap: 20px;
             height: 100vh;
             box-sizing: border-box;
@@ -160,8 +160,8 @@
     </div>
 
     <script>
-        // TU URL EXACTA
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxZk4XLBz-uPUMM6BaDzSyq0McXmNeQHUmfjALHMplDkkqwUF8W8ArJUecROMdIafJY2A/exec';
+        // URL ACTUALIZADA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxfCjcNSromuRtOKSBaTpucj6aQHkmwixw8ImYmTwJhMLySeiFT_NrhiUvcMaktukNi/exec';
         
         // Sonido de alerta 
         const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -272,7 +272,6 @@
                     
                     if (!ticketsAlertados.has(ticket.dataset.id)) {
                         ticketsAlertados.add(ticket.dataset.id);
-                        // Suena por 5 segundos
                         audioAlerta.play().catch(e => console.log("Autoplay bloqueado"));
                         setTimeout(() => {
                             audioAlerta.pause();
@@ -285,7 +284,7 @@
 
         window.onload = () => {
             cargarPedidos();
-            setInterval(cargarPedidos, 10000); // Recarga cada 10 segundos
+            setInterval(cargarPedidos, 10000); 
             setInterval(verificarTiempos, 5000); 
         };
     </script>
