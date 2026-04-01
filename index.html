@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Newen Creativo - Menú Mesero</title>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
@@ -19,53 +19,91 @@
             color: var(--blanco);
             font-family: 'Poppins', sans-serif;
             margin: 0;
-            padding: 20px;
-            padding-bottom: 80px; /* Espacio para el pie de página fijo */
+            padding: 15px;
+            padding-bottom: 90px; /* Espacio para el pie de página fijo */
+            -webkit-tap-highlight-color: transparent; /* Quita el destello azul al tocar en móviles */
         }
 
         header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 15px;
         }
 
         .logo {
-            max-width: 150px;
+            max-width: 120px;
             filter: drop-shadow(0px 4px 10px rgba(212, 175, 55, 0.3));
+            margin-bottom: 10px;
         }
 
         .config-mesa {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-bottom: 20px;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
         }
 
         input[type="number"], textarea {
             background: var(--negro-tarjeta);
             border: 1px solid var(--oro);
             color: var(--blanco);
-            padding: 10px;
+            padding: 12px;
             border-radius: 5px;
             outline: none;
+            font-size: 1em;
         }
 
+        /* Filtros de Categorías Optimizados para Táctil */
+        .filtros-container {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            scrollbar-width: none; 
+            -webkit-overflow-scrolling: touch; /* Scroll fluido en iOS */
+        }
+        .filtros-container::-webkit-scrollbar { display: none; }
+
+        .btn-filtro {
+            background: transparent;
+            color: var(--oro);
+            border: 1px solid var(--oro);
+            padding: 10px 18px;
+            border-radius: 25px;
+            cursor: pointer;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s;
+        }
+
+        .btn-filtro.activo {
+            background: var(--oro);
+            color: var(--negro-fondo);
+        }
+
+        /* Ajuste de Grid para Móviles */
         .menu-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
         }
 
         .card {
             background: var(--negro-tarjeta);
-            border-left: 4px solid var(--oro);
-            padding: 20px;
+            border-top: 4px solid var(--oro);
+            padding: 15px;
             border-radius: 8px;
             position: relative;
-            transition: transform 0.2s;
+            display: flex;
+            flex-direction: column;
         }
 
         .card.agotado {
-            opacity: 0.4;
+            opacity: 0.5;
             filter: grayscale(1);
             pointer-events: none;
         }
@@ -75,73 +113,131 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            background: red;
+            background: #e74c3c;
             color: white;
             padding: 5px 10px;
             border-radius: 5px;
             font-weight: bold;
             font-size: 0.8em;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
         }
 
-        .card.agotado .agotado-badge {
-            display: block;
+        .card.agotado .agotado-badge { display: block; }
+
+        .categoria-label {
+            color: var(--gris);
+            font-size: 0.75em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
         }
 
         .card h3 {
             color: var(--oro);
-            margin: 0 0 10px 0;
+            margin: 0 0 5px 0;
             font-family: 'Playfair Display', serif;
+            font-size: 1.3em;
+            line-height: 1.2;
         }
 
         .precio {
             font-weight: 600;
-            color: var(--oro);
-            display: block;
+            color: var(--blanco);
+            font-size: 1.2em;
             margin-bottom: 10px;
         }
 
         .seccion-ingredientes {
-            margin-top: 15px;
             font-size: 0.9em;
+            margin-bottom: 10px;
         }
 
         .check-group {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
             margin-bottom: 15px;
-            padding: 10px;
-            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
             border-radius: 5px;
+            border: 1px solid #333;
         }
 
+        /* Checkboxes más grandes para dedos */
         label {
             display: flex;
             align-items: center;
-            gap: 5px;
+            gap: 8px;
             cursor: pointer;
+            width: 100%; /* Una opción por línea en móvil para no equivocarse */
+        }
+
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            margin: 0 5px 0 0;
+            accent-color: var(--oro);
         }
 
         .input-notas {
             width: 100%;
             box-sizing: border-box;
-            margin-top: 10px;
-            font-size: 0.85em;
+            margin-top: auto;
+            font-size: 0.9em;
             resize: none;
-            height: 60px;
+            height: 50px;
+            margin-bottom: 15px;
+        }
+
+        .acciones-container {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .control-cantidad {
+            display: flex;
+            align-items: center;
+            background: var(--negro-fondo);
+            border: 1px solid var(--oro);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        /* Botones más amigables al tacto */
+        .btn-cant {
+            background: transparent;
+            color: var(--oro);
+            border: none;
+            padding: 12px 18px;
+            font-size: 1.3em;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .btn-cant:active { background: rgba(212, 175, 55, 0.2); }
+
+        .num-cant {
+            color: var(--blanco);
+            padding: 0 5px;
+            font-weight: 600;
+            min-width: 25px;
+            text-align: center;
+            font-size: 1.1em;
         }
 
         .btn-agregar {
             background: var(--oro);
             color: var(--negro-fondo);
             border: none;
-            padding: 10px 20px;
-            font-weight: 600;
+            padding: 12px;
+            font-weight: 700;
             border-radius: 5px;
             cursor: pointer;
-            width: 100%;
-            margin-top: 15px;
+            flex-grow: 1;
             transition: background 0.3s;
+            text-transform: uppercase;
+            font-size: 0.95em;
         }
 
         #resumen-pedido {
@@ -151,129 +247,205 @@
             right: 0;
             background: var(--oro);
             color: var(--negro-fondo);
-            padding: 15px 30px;
+            padding: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-weight: bold;
-            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.6);
+            z-index: 100;
+        }
+
+        #totalItems {
+            font-size: 1.1em;
         }
 
         .btn-enviar {
             background: var(--negro-fondo);
             color: var(--oro);
             border: 2px solid var(--negro-fondo);
-            padding: 10px 25px;
+            padding: 12px 20px;
             border-radius: 5px;
             cursor: pointer;
             font-weight: bold;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        /* Ajustes extra para teléfonos pequeños */
+        @media (max-width: 400px) {
+            .acciones-container {
+                flex-direction: column;
+            }
+            .control-cantidad {
+                justify-content: space-between;
+            }
+            .btn-cant {
+                padding: 10px 25px;
+            }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <img src="logo.png" alt="Logo" class="logo">
+        <img src="logo.png" alt="Logo" class="logo" onerror="this.style.display='none'">
         <div class="config-mesa">
-            <label>Mesa: <input type="number" id="numMesa" placeholder="0" style="width: 60px;"></label>
+            <label for="numMesa">MESA:</label>
+            <input type="number" id="numMesa" placeholder="0" style="width: 70px; font-size: 1.2em; text-align: center;">
         </div>
     </header>
 
+    <div id="filtrosCategorias" class="filtros-container"></div>
+
     <div class="menu-container" id="menuLista">
-        <p style="text-align: center; width: 100%;">Cargando menú...</p>
+        <p style="text-align: center; width: 100%; color: var(--oro);">Cargando menú...</p>
     </div>
 
     <div id="resumen-pedido">
-        <span id="totalItems">Items en carrito: 0</span>
+        <span id="totalItems">CARRITO: 0</span>
         <button class="btn-enviar" onclick="enviarPedido()">ENVIAR A COCINA</button>
     </div>
 
     <script>
-        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbxfCjcNSromuRtOKSBaTpucj6aQHkmwixw8ImYmTwJhMLySeiFT_NrhiUvcMaktukNi/exec';
         let carrito = [];
+        let menuGlobal = [];
 
-        async function cargarMenu() {
+        async function inicializar() {
             try {
                 const res = await fetch(`${API_URL}?action=getMenu`);
-                const data = await res.json();
-                const container = document.getElementById('menuLista');
-                container.innerHTML = ''; 
+                menuGlobal = await res.json();
                 
-                data.forEach((plato, index) => {
-                    const estaAgotado = plato.disponible === 'no';
-                    const card = document.createElement('div');
-                    card.className = `card ${estaAgotado ? 'agotado' : ''}`;
-                    
-                    let htmlIngredientesBase = '';
-                    if (plato.ingredientesBase.length > 0 && plato.ingredientesBase[0] !== "") {
-                        htmlIngredientesBase = `
-                            <strong>Quitar (Base):</strong>
-                            <div class="check-group">
-                                ${plato.ingredientesBase.map(ing => `
-                                    <label><input type="checkbox" class="base" value="${ing}" checked> ${ing}</label>
-                                `).join('')}
-                            </div>
-                        `;
-                    }
-
-                    let htmlIngredientesExtra = '';
-                    if (plato.ingredientesExtra.length > 0 && plato.ingredientesExtra[0] !== "") {
-                        htmlIngredientesExtra = `
-                            <strong>Agregar (Extras):</strong>
-                            <div class="check-group">
-                                ${plato.ingredientesExtra.map(ing => `
-                                    <label><input type="checkbox" class="extra" value="${ing}"> ${ing}</label>
-                                `).join('')}
-                            </div>
-                        `;
-                    }
-
-                    card.innerHTML = `
-                        <div class="agotado-badge">AGOTADO</div>
-                        <h3>${plato.nombre}</h3>
-                        <p style="font-size: 0.9em; color: #ccc;">${plato.descripcion}</p>
-                        <span class="precio">$${plato.precio}</span>
-                        
-                        <div class="seccion-ingredientes">
-                            ${htmlIngredientesBase}
-                            ${htmlIngredientesExtra}
-                        </div>
-
-                        <textarea class="input-notas" id="notas-${index}" placeholder="Notas: Ej. bien cocido, sin aderezo..."></textarea>
-                        <button class="btn-agregar" onclick="agregarAlPedido(${index}, '${plato.nombre}')">${estaAgotado ? 'NO DISPONIBLE' : 'AÑADIR AL PEDIDO'}</button>
-                    `;
-                    container.appendChild(card);
-                });
+                renderizarFiltros();
+                renderizarMenu('Todas');
             } catch (error) {
-                document.getElementById('menuLista').innerHTML = '<p>Error al cargar el menú. Verifica la conexión.</p>';
+                document.getElementById('menuLista').innerHTML = '<p style="text-align:center;">Error de conexión. <button onclick="location.reload()" style="padding:10px; margin-top:10px;">Reintentar</button></p>';
+            }
+        }
+
+        function renderizarFiltros() {
+            const contenedor = document.getElementById('filtrosCategorias');
+            const categorias = [...new Set(menuGlobal.map(p => p.categoria).filter(c => c))];
+            
+            let html = `<button class="btn-filtro activo" onclick="filtrar('Todas', this)">Todas</button>`;
+            categorias.forEach(cat => {
+                html += `<button class="btn-filtro" onclick="filtrar('${cat}', this)">${cat}</button>`;
+            });
+            contenedor.innerHTML = html;
+        }
+
+        function filtrar(categoria, botonElement) {
+            document.querySelectorAll('.btn-filtro').forEach(btn => btn.classList.remove('activo'));
+            botonElement.classList.add('activo');
+            renderizarMenu(categoria);
+        }
+
+        function renderizarMenu(filtroCategoria) {
+            const container = document.getElementById('menuLista');
+            container.innerHTML = ''; 
+
+            const platosFiltrados = filtroCategoria === 'Todas' 
+                ? menuGlobal 
+                : menuGlobal.filter(p => p.categoria === filtroCategoria);
+
+            platosFiltrados.forEach((plato) => {
+                const index = menuGlobal.findIndex(p => p.nombre === plato.nombre);
+                const estaAgotado = plato.disponible === 'no';
+                const card = document.createElement('div');
+                card.className = `card ${estaAgotado ? 'agotado' : ''}`;
+                
+                const basesValidas = plato.ingredientesBase.filter(ing => ing && ing.trim().toUpperCase() !== 'N/A');
+                const extrasValidos = plato.ingredientesExtra.filter(ing => ing && ing.trim().toUpperCase() !== 'N/A');
+
+                let htmlIngredientesBase = '';
+                if (basesValidas.length > 0) {
+                    htmlIngredientesBase = `
+                        <strong style="color:var(--oro); display:block; margin-bottom:5px;">Quitar (Base):</strong>
+                        <div class="check-group">
+                            ${basesValidas.map(ing => `
+                                <label><input type="checkbox" class="base" value="${ing}" checked> ${ing}</label>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                let htmlIngredientesExtra = '';
+                if (extrasValidos.length > 0) {
+                    htmlIngredientesExtra = `
+                        <strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras):</strong>
+                        <div class="check-group">
+                            ${extrasValidos.map(ing => `
+                                <label><input type="checkbox" class="extra" value="${ing}"> ${ing}</label>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="agotado-badge">AGOTADO</div>
+                    <div class="categoria-label">${plato.categoria}</div>
+                    <h3>${plato.nombre}</h3>
+                    <p style="font-size: 0.85em; color: #bbb; margin-top: 0; line-height: 1.4;">${plato.descripcion}</p>
+                    <span class="precio">$${plato.precio}</span>
+                    
+                    <div class="seccion-ingredientes">
+                        ${htmlIngredientesBase}
+                        ${htmlIngredientesExtra}
+                    </div>
+
+                    <textarea class="input-notas" id="notas-${index}" placeholder="Notas especiales (opcional)..."></textarea>
+                    
+                    <div class="acciones-container">
+                        <div class="control-cantidad">
+                            <button class="btn-cant" onclick="cambiarCantidad(${index}, -1)">-</button>
+                            <span class="num-cant" id="cant-${index}">1</span>
+                            <button class="btn-cant" onclick="cambiarCantidad(${index}, 1)">+</button>
+                        </div>
+                        <button class="btn-agregar" id="btn-add-${index}" onclick="agregarAlPedido(${index}, '${plato.nombre}')">
+                            ${estaAgotado ? 'AGOTADO' : 'AÑADIR'}
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function cambiarCantidad(index, cambio) {
+            const spanCant = document.getElementById(`cant-${index}`);
+            let valorActual = parseInt(spanCant.innerText);
+            let nuevoValor = valorActual + cambio;
+            if (nuevoValor >= 1 && nuevoValor <= 20) {
+                spanCant.innerText = nuevoValor;
             }
         }
 
         function agregarAlPedido(index, nombre) {
-            const card = document.getElementsByClassName('card')[index];
+            const card = document.getElementById(`btn-add-${index}`).closest('.card');
             const notas = document.getElementById(`notas-${index}`).value;
+            const cantidad = parseInt(document.getElementById(`cant-${index}`).innerText);
             
             const quitados = Array.from(card.querySelectorAll('.base:not(:checked)')).map(c => c.value);
             const agregados = Array.from(card.querySelectorAll('.extra:checked')).map(c => c.value);
 
-            const item = {
-                nombre: nombre,
-                notas: notas,
-                sin: quitados,
-                con: agregados
-            };
+            for(let i = 0; i < cantidad; i++) {
+                carrito.push({
+                    nombre: nombre,
+                    notas: notas,
+                    sin: quitados,
+                    con: agregados
+                });
+            }
 
-            carrito.push(item);
-            document.getElementById('totalItems').innerText = `Items en carrito: ${carrito.length}`;
+            document.getElementById('totalItems').innerText = `CARRITO: ${carrito.length}`;
             
-            const btn = card.querySelector('.btn-agregar');
+            const btn = document.getElementById(`btn-add-${index}`);
             const textoOriginal = btn.innerText;
-            btn.innerText = "¡AÑADIDO!";
+            btn.innerText = `¡+${cantidad} AÑADIDO!`;
             btn.style.background = "#fff";
             
-            // Limpiar campos después de agregar
             document.getElementById(`notas-${index}`).value = '';
+            document.getElementById(`cant-${index}`).innerText = '1';
             Array.from(card.querySelectorAll('.base')).forEach(c => c.checked = true);
             Array.from(card.querySelectorAll('.extra')).forEach(c => c.checked = false);
 
@@ -286,7 +458,7 @@
         async function enviarPedido() {
             const mesa = document.getElementById('numMesa').value;
             if (!mesa || carrito.length === 0) {
-                alert("Por favor ingresa número de mesa y añade al menos un producto.");
+                alert("Por favor ingresa un número de mesa y añade al menos un producto.");
                 return;
             }
 
@@ -307,20 +479,27 @@
                 });
 
                 if (response.ok) {
-                    alert(`¡Pedido de la Mesa ${mesa} enviado a cocina!`);
+                    alert(`¡Pedido enviado a cocina (Mesa ${mesa})!`);
                     carrito = [];
-                    document.getElementById('totalItems').innerText = `Items en carrito: 0`;
+                    document.getElementById('totalItems').innerText = `CARRITO: 0`;
                     document.getElementById('numMesa').value = '';
+                    
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    renderizarMenu('Todas');
+                    document.querySelectorAll('.btn-filtro').forEach(btn => {
+                        btn.classList.remove('activo');
+                        if(btn.innerText === 'Todas') btn.classList.add('activo');
+                    });
                 }
             } catch (error) {
-                alert("Hubo un error al enviar el pedido.");
+                alert("Hubo un error al conectar con la base de datos.");
             } finally {
                 btnEnviar.innerText = "ENVIAR A COCINA";
                 btnEnviar.disabled = false;
             }
         }
 
-        window.onload = cargarMenu;
+        window.onload = inicializar;
     </script>
 </body>
 </html>
