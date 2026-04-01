@@ -109,7 +109,7 @@
     </div>
 
     <script>
-        // LA NUEVA URL HA SIDO INTEGRADA AQUÍ:
+        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
         let carrito = []; let menuGlobal = [];
@@ -229,6 +229,7 @@
 
         function agregar(idx, n, pB) {
             const card = document.getElementById(`card-${idx}`);
+            const cat = menuGlobal[idx].categoria; // <-- AHORA CAPTURAMOS LA CATEGORÍA AQUÍ
             const nt = document.getElementById(`notas-${idx}`).value;
             const c = parseInt(document.getElementById(`cant-${idx}`).innerText);
             const pF = calcularPrecioFinal(idx, pB);
@@ -238,7 +239,8 @@
             const bB = Array.from(card.querySelectorAll('.base-bowl:checked')).map(x => x.value);
             const pP = Array.from(card.querySelectorAll('.proteina:checked')).map(x => x.value);
             
-            for(let i=0; i<c; i++) { carrito.push({ nombre: n, notas: nt, sin: s, con: e, baseE: bB, protE: pP, precio: pF }); }
+            // Enviamos la categoría en el objeto del carrito
+            for(let i=0; i<c; i++) { carrito.push({ categoria: cat, nombre: n, notas: nt, sin: s, con: e, baseE: bB, protE: pP, precio: pF }); }
             
             actualizarBarra(); 
             const btn = document.getElementById(`btn-add-${idx}`); 
