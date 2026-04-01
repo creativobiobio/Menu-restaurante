@@ -27,7 +27,9 @@
     <div class="panel-tickets" id="contenedor-tickets"></div>
     <div class="panel-resumen"><h2>Cola</h2><div id="lista-resumen"></div></div>
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxfCjcNSromuRtOKSBaTpucj6aQHkmwixw8ImYmTwJhMLySeiFT_NrhiUvcMaktukNi/exec';
+        // URL CONECTADA EXACTAMENTE A TU BASE DE DATOS
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxXQAHi_yvIpViecP0MbBme6WNdGkpsXhCK_vQjzlG_kXwaOgdV-GERyjdb6HAR-0N2kQ/exec';
+        
         async function cargar() {
             try {
                 const res = await fetch(`${API_URL}?action=getPedidos`); const pedidos = await res.json();
