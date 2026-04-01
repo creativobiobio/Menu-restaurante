@@ -19,20 +19,32 @@
         .btn-filtro.activo { background: var(--oro); color: var(--negro-fondo); }
         
         .menu-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; }
-        .card { background: var(--negro-tarjeta); border-top: 4px solid var(--oro); padding: 15px; border-radius: 8px; position: relative; display: flex; flex-direction: column; }
+        .card { background: var(--negro-tarjeta); border-top: 4px solid var(--oro); padding: 15px; border-radius: 8px; position: relative; display: flex; flex-direction: column; transition: all 0.3s; }
         .card.agotado { opacity: 0.5; filter: grayscale(1); pointer-events: none; }
         .agotado-badge { display: none; position: absolute; top: 10px; right: 10px; background: var(--rojo); color: white; padding: 5px 10px; border-radius: 5px; font-weight: bold; font-size: 0.8em; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         .card.agotado .agotado-badge { display: block; }
         
-        .categoria-label { color: var(--gris); font-size: 0.75em; text-transform: uppercase; margin-bottom: 5px; }
-        .card h3 { color: var(--oro); margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.3em; line-height: 1.2;}
-        .precio { font-weight: 600; color: var(--blanco); font-size: 1.2em; margin-bottom: 10px; transition: color 0.3s; }
+        /* DISEÑO COLAPSABLE */
+        .card-header { cursor: pointer; }
+        .categoria-label { color: var(--gris); font-size: 0.75em; text-transform: uppercase; margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; }
+        .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+        .card h3 { color: var(--oro); margin: 0 0 5px 0; font-family: 'Playfair Display', serif; font-size: 1.4em; line-height: 1.2; flex-grow: 1; padding-right: 10px; }
+        .precio { font-weight: 600; color: var(--blanco); font-size: 1.2em; transition: color 0.3s; white-space: nowrap; }
         .precio.aumentado { color: var(--verde); }
+        .desc-breve { font-size: 0.85em; color: #bbb; margin: 5px 0 10px 0; line-height: 1.4; }
         
+        .btn-desplegar { background: transparent; color: var(--oro); border: 1px dashed var(--oro); padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: 600; text-transform: uppercase; font-size: 0.9em; transition: 0.3s; display: flex; justify-content: space-between; align-items: center; }
+        .btn-desplegar:active { background: rgba(212,175,55,0.1); }
+        
+        /* CUERPO OCULTO POR DEFECTO */
+        .card-body { display: none; padding-top: 15px; border-top: 1px solid #444; margin-top: 15px; animation: fadeIn 0.3s ease-in-out; }
+        .card-body.visible { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
         .check-group { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 15px; padding: 12px; background: rgba(0,0,0,0.3); border-radius: 5px; border: 1px solid #333; }
         label { display: flex; align-items: center; gap: 8px; cursor: pointer; width: 100%; font-size: 0.95em; }
         input[type="checkbox"] { transform: scale(1.3); margin: 0 5px 0 0; accent-color: var(--oro); }
-        .input-notas { width: 100%; box-sizing: border-box; margin-top: auto; font-size: 0.9em; resize: none; height: 50px; margin-bottom: 15px; }
+        .input-notas { width: 100%; box-sizing: border-box; font-size: 0.9em; resize: none; height: 50px; margin-bottom: 15px; }
         
         .acciones-container { display: flex; gap: 10px; align-items: stretch; }
         .control-cantidad { display: flex; align-items: center; background: var(--negro-fondo); border: 1px solid var(--oro); border-radius: 5px; overflow: hidden; }
@@ -97,7 +109,7 @@
     </div>
 
     <script>
-        // URL CONECTADA EXACTAMENTE A TU BASE DE DATOS
+        // TU URL EXACTA
         const API_URL = 'https://script.google.com/macros/s/AKfycbxXQAHi_yvIpViecP0MbBme6WNdGkpsXhCK_vQjzlG_kXwaOgdV-GERyjdb6HAR-0N2kQ/exec';
         
         let carrito = []; let menuGlobal = [];
@@ -126,13 +138,28 @@
 
         function filtrar(c, b) { document.querySelectorAll('.btn-filtro').forEach(x => x.classList.remove('activo')); b.classList.add('activo'); renderizarMenu(c); }
 
+        function toggleOpciones(idx) {
+            const body = document.getElementById(`body-${idx}`);
+            const btn = document.getElementById(`btn-toggle-${idx}`);
+            if (body.classList.contains('visible')) {
+                body.classList.remove('visible');
+                btn.innerHTML = 'Personalizar Plato <span>▼</span>';
+            } else {
+                // Opcional: Cerrar las demás tarjetas al abrir una nueva
+                document.querySelectorAll('.card-body').forEach(b => b.classList.remove('visible'));
+                document.querySelectorAll('.btn-desplegar').forEach(b => b.innerHTML = 'Personalizar Plato <span>▼</span>');
+                
+                body.classList.add('visible');
+                btn.innerHTML = 'Ocultar Opciones <span>▲</span>';
+            }
+        }
+
         function calcularPrecioFinal(idx, pBase) {
             const card = document.getElementById(`btn-add-${idx}`).closest('.card');
             const cat = menuGlobal[idx].categoria.toLowerCase();
             const nExtras = card.querySelectorAll('.extra:checked').length;
             let adicional = 0;
             
-            // Reglas de cobro por extra
             if (cat.includes('bowl')) {
                 if (nExtras >= 5) adicional = (nExtras - 4) * 1000;
             } else if (cat.includes('hamburguesa') || cat.includes('smash')) {
@@ -154,34 +181,47 @@
                 const idx = menuGlobal.findIndex(m => m.nombre === p.nombre);
                 const agotado = p.disponible === 'no';
                 const card = document.createElement('div'); card.className = `card ${agotado ? 'agotado' : ''}`;
+                card.id = `card-${idx}`;
                 
                 const bV = p.ingredientesBase.filter(i => i && i.toUpperCase() !== 'N/A');
                 const eV = p.ingredientesExtra.filter(i => i && i.toUpperCase() !== 'N/A');
                 const bBowl = (p.baseBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
                 const pBowl = (p.proteinaBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
 
-                // Lógica de texto para saber cuándo cobra extra
                 let textoExtra = "";
                 const catLower = p.categoria.toLowerCase();
                 if (catLower.includes('bowl')) textoExtra = "(Desde el 5to +$1.000)";
                 else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(Desde el 4to +$1.000)";
 
+                // Si no hay ninguna casilla para marcar, podemos ocultar esa sección
+                const tieneOpciones = bV.length > 0 || eV.length > 0 || bBowl.length > 0 || pBowl.length > 0;
+
                 card.innerHTML = `
                     <div class="agotado-badge">AGOTADO</div>
-                    <div class="categoria-label">${p.categoria}</div>
-                    <h3>${p.nombre}</h3>
-                    <p style="font-size:0.85em; color:#bbb; margin:0 0 10px 0;">${p.descripcion}</p>
-                    <span class="precio">${formatoCLP(p.precio)}</span>
-                    <div class="seccion-ingredientes">
-                        ${bBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Base:</strong><div class="check-group">${bBowl.map(i => `<label><input type="checkbox" class="base-bowl" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
-                        ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína:</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
-                        ${bV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Quitar (Base):</strong><div class="check-group">${bV.map(i => `<label><input type="checkbox" class="base" value="${i}" checked> ${i}</label>`).join('')}</div>` : ''}
-                        ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras) <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
+                    
+                    <div class="card-header" onclick="toggleOpciones(${idx})">
+                        <div class="categoria-label">${p.categoria}</div>
+                        <div class="header-top">
+                            <h3>${p.nombre}</h3>
+                            <span class="precio">${formatoCLP(p.precio)}</span>
+                        </div>
+                        <p class="desc-breve">${p.descripcion}</p>
+                        <button class="btn-desplegar" id="btn-toggle-${idx}">Personalizar Plato <span>▼</span></button>
                     </div>
-                    <textarea class="input-notas" id="notas-${idx}" placeholder="Notas adicionales (Ej. bien cocida)..."></textarea>
-                    <div class="acciones-container">
-                        <div class="control-cantidad"><button class="btn-cant" onclick="cambiarCant(${idx},-1)">-</button><span class="num-cant" id="cant-${idx}">1</span><button class="btn-cant" onclick="cambiarCant(${idx},1)">+</button></div>
-                        <button class="btn-agregar" id="btn-add-${idx}" onclick="agregar(${idx},'${p.nombre}',${p.precio})">${agotado?'AGOTADO':'AÑADIR'}</button>
+                    
+                    <div class="card-body" id="body-${idx}">
+                        <div class="seccion-ingredientes">
+                            ${bBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Base:</strong><div class="check-group">${bBowl.map(i => `<label><input type="checkbox" class="base-bowl" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
+                            ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína:</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
+                            ${bV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Quitar (Base):</strong><div class="check-group">${bV.map(i => `<label><input type="checkbox" class="base" value="${i}" checked> ${i}</label>`).join('')}</div>` : ''}
+                            ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras) <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
+                            ${!tieneOpciones ? `<p style="color:var(--gris); font-size:0.9em; font-style:italic;">Este plato no tiene ingredientes configurables.</p>` : ''}
+                        </div>
+                        <textarea class="input-notas" id="notas-${idx}" placeholder="Notas adicionales (Ej. bien cocida)..."></textarea>
+                        <div class="acciones-container">
+                            <div class="control-cantidad"><button class="btn-cant" onclick="cambiarCant(${idx},-1)">-</button><span class="num-cant" id="cant-${idx}">1</span><button class="btn-cant" onclick="cambiarCant(${idx},1)">+</button></div>
+                            <button class="btn-agregar" id="btn-add-${idx}" onclick="agregar(${idx},'${p.nombre}',${p.precio})">${agotado?'AGOTADO':'AÑADIR'}</button>
+                        </div>
                     </div>`;
                 container.appendChild(card);
             });
@@ -190,7 +230,7 @@
         function cambiarCant(i, c) { const s = document.getElementById(`cant-${i}`); let n = parseInt(s.innerText) + c; if (n >= 1 && n <= 20) s.innerText = n; }
 
         function agregar(idx, n, pB) {
-            const card = document.getElementById(`btn-add-${idx}`).closest('.card');
+            const card = document.getElementById(`card-${idx}`);
             const nt = document.getElementById(`notas-${idx}`).value;
             const c = parseInt(document.getElementById(`cant-${idx}`).innerText);
             const pF = calcularPrecioFinal(idx, pB);
@@ -206,7 +246,7 @@
             const btn = document.getElementById(`btn-add-${idx}`); 
             btn.innerText = `¡+${c} AÑADIDO!`; btn.style.background = "#fff";
             
-            // Reseteo visual
+            // Reseteo visual y colapso automático
             document.getElementById(`notas-${idx}`).value = '';
             document.getElementById(`cant-${idx}`).innerText = '1';
             Array.from(card.querySelectorAll('.base')).forEach(x => x.checked = true);
@@ -215,7 +255,11 @@
             Array.from(card.querySelectorAll('.proteina')).forEach(x => x.checked = false);
             calcularPrecioFinal(idx, pB);
 
-            setTimeout(() => { btn.innerText = "AÑADIR"; btn.style.background = "var(--oro)"; }, 1000);
+            setTimeout(() => { 
+                btn.innerText = "AÑADIR"; 
+                btn.style.background = "var(--oro)"; 
+                toggleOpciones(idx); // Cierra la tarjeta automáticamente
+            }, 800);
         }
 
         function actualizarBarra() {
