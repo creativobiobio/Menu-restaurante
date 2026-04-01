@@ -57,7 +57,7 @@
     </div>
 
     <script>
-        // LA NUEVA URL HA SIDO INTEGRADA AQUÍ:
+        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
         const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
@@ -91,14 +91,18 @@
                     let conteoPlatos = {};
                     p.items.forEach(i => {
                         totalPedido += i.precio;
-                        conteoPlatos[i.nombre] = (conteoPlatos[i.nombre] || 0) + 1;
+                        // Agrupamos usando Categoría + Nombre
+                        const cat = i.categoria || 'Varios';
+                        const llave = `${cat}|||${i.nombre}`;
+                        conteoPlatos[llave] = (conteoPlatos[llave] || 0) + 1;
                     });
                     
                     totalDia += totalPedido;
 
                     let platosHTML = '';
-                    for (const [nombre, cant] of Object.entries(conteoPlatos)) {
-                        platosHTML += `<div style="font-size: 0.9em; color: #ccc;">${cant}x ${nombre}</div>`;
+                    for (const [llave, cant] of Object.entries(conteoPlatos)) {
+                        const [categoria, nombre] = llave.split('|||');
+                        platosHTML += `<div style="font-size: 0.9em; color: #ccc;"><strong style="color:var(--oro)">[${categoria}]</strong> ${cant}x ${nombre}</div>`;
                     }
 
                     const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(En cocina)</span>';
