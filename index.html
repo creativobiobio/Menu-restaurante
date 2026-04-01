@@ -189,8 +189,8 @@
     </div>
 
     <script>
-        // TU URL EXACTA
-        const API_URL = 'https://script.google.com/macros/s/AKfycbxZk4XLBz-uPUMM6BaDzSyq0McXmNeQHUmfjALHMplDkkqwUF8W8ArJUecROMdIafJY2A/exec';
+        // URL ACTUALIZADA
+        const API_URL = 'https://script.google.com/macros/s/AKfycbxfCjcNSromuRtOKSBaTpucj6aQHkmwixw8ImYmTwJhMLySeiFT_NrhiUvcMaktukNi/exec';
         let carrito = [];
 
         async function cargarMenu() {
@@ -198,7 +198,7 @@
                 const res = await fetch(`${API_URL}?action=getMenu`);
                 const data = await res.json();
                 const container = document.getElementById('menuLista');
-                container.innerHTML = ''; // Limpiar mensaje de carga
+                container.innerHTML = ''; 
                 
                 data.forEach((plato, index) => {
                     const estaAgotado = plato.disponible === 'no';
