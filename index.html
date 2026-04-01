@@ -3,273 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Make Your Burger - Menú Digital</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <title>Newen Creativo - Toma de Pedidos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
-        body { font-family: 'Inter', sans-serif; background-color: #000; color: #fff; margin: 0; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .loader { border-top-color: #eab308; animation: spin 1s linear infinite; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        :root {
+            --oro: #D4AF37;
+            --negro-fondo: #1a1a1a;
+            --negro-tarjeta: #252525;
+            --blanco: #ffffff;
+            --gris: #888;
+        }
+
+        body {
+            background-color: var(--negro-fondo);
+            color: var(--blanco);
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            max-width: 150px;
+            filter: drop-shadow(0px 4px 10px rgba(212, 175, 55, 0.3));
+        }
+
+        .config-mesa {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input[type="number"], textarea {
+            background: var(--negro-tarjeta);
+            border: 1px solid var(--oro);
+            color: var(--blanco);
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .menu-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--negro-tarjeta);
+            border-left: 4px solid var(--oro);
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .card.agotado {
+            opacity: 0.5;
+            filter: grayscale(1);
+            pointer-events: none;
+        }
+
+        .card h3 {
+            color: var(--oro);
+            margin: 0 0 10px 0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .precio {
+            font-weight: 600;
+            color: var(--oro);
+        }
+
+        .seccion-ingredientes {
+            margin-top: 15px;
+            font-size: 0.9em;
+        }
+
+        .check-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .input-notas {
+            width: 100%;
+            box-sizing: border-box;
+            margin-top: 10px;
+            font-size: 0.85em;
+            resize: none;
+        }
+
+        .btn-agregar {
+            background: var(--oro);
+            color: var(--negro-fondo);
+            border: none;
+            padding: 10px 20px;
+            font-weight: 600;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        #resumen-pedido {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--oro);
+            color: var(--negro-fondo);
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.5);
+        }
+
+        .btn-enviar {
+            background: var(--negro-fondo);
+            color: var(--oro);
+            border: 2px solid var(--negro-fondo);
+            padding: 10px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { Plus, X, Utensils, Coffee, Flame, Salad, ClipboardList, MapPin, CheckCircle2, Minus, ChevronRight, Info, AlertCircle } = lucide;
+    <header>
+        <img src="logo.png" alt="Newen Creativo" class="logo">
+        <div class="config-mesa">
+            <label>Mesa: <input type="number" id="numMesa" placeholder="0"></label>
+        </div>
+    </header>
 
-        const API_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR4yZc7M7meCPQ6Mc0WmYpw08NceifjZ2ccaXCgCImrOePe46mgGKnAdaeLVVf6Zu2PfMUpO7NYJ7tD/pub?gid=0&single=true&output=csv";
+    <div class="menu-container" id="menuLista">
+        </div>
 
-        // Configuración de extras
-        const INGREDIENTS = ['Champiñón', 'Palta', 'Tomate', 'Tocino', 'Cheddar', 'Lechuga', 'Choclo', 'Camarón', 'Cebolla Morada', 'Pepinillos', 'Huevo', 'Philadelphia', 'Cebolla Caramelizada', 'Salame', 'Palmitos'];
-        const BOWL_BASES = ['Arroz', 'Choclo', 'Quinoa', 'Lechuga', 'Espirales'];
-        const BOWL_PROTEINS = ['Camarón', 'Carne', 'Pollo', 'Salmón', 'Huevo'];
+    <div id="resumen-pedido">
+        <span id="totalItems">Items: 0</span>
+        <button class="btn-enviar" onclick="enviarPedido()">ENVIAR A COCINA</button>
+    </div>
 
-        // Funciones de limpieza de la "Otra IA" mejoradas
-        const clean = (t) => (t || "").toString().toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/"/g,"");
-        const formatPrice = (p) => "$" + (Number(p)||0).toLocaleString("es-CL");
-        const getField = (obj, keys) => {
-            for (let k of keys) {
-                let cleanK = k.toLowerCase();
-                let foundKey = Object.keys(obj).find(key => key.toLowerCase().trim() === cleanK);
-                if (foundKey) return obj[foundKey];
-            }
-            return "";
-        };
+    <script>
+        const API_URL = 'TU_URL_DE_GOOGLE_APPS_SCRIPT';
+        let carrito = [];
 
-        function App() {
-            const [menu, setMenu] = React.useState(null);
-            const [loading, setLoading] = React.useState(true);
-            const [error, setError] = React.useState(null);
-            const [tab, setTab] = React.useState("burgers");
-            const [cart, setCart] = React.useState([]);
-            const [table, setTable] = React.useState("");
-            const [selected, setSelected] = React.useState(null);
-            const [isPreview, setIsPreview] = React.useState(false);
-            const [config, setConfig] = React.useState({ ingredients: [], base: '', protein: '', observations: '' });
-
-            React.useEffect(() => {
-                Papa.parse(API_URL, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: (res) => {
-                        try {
-                            const items = res.data.map(row => ({
-                                id: getField(row, ["id"]),
-                                categoria: clean(getField(row, ["categoria", "Categoría"])),
-                                nombre: getField(row, ["nombre", "Nombre"]),
-                                descripcion: getField(row, ["descripcion", "Descripción"]),
-                                precio: getField(row, ["precio", "Precio"]),
-                                disponible: clean(getField(row, ["disponible", "Disponible"]))
-                            })).filter(i => i.nombre);
-
-                            const filter = (c) => items.filter(i => i.categoria === c);
-
-                            setMenu({
-                                burgers: filter("burgers"),
-                                makebowl: filter("makebowl"),
-                                hotbowls: filter("hotbowls"),
-                                churrascos: filter("churrascos"),
-                                bebestibles: [...filter("calientes"), ...filter("frios")]
-                            });
-                            setLoading(false);
-                        } catch (e) {
-                            setError("Error procesando los datos del menú.");
-                            setLoading(false);
-                        }
-                    },
-                    error: () => {
-                        setError("No se pudo conectar con Google Sheets.");
-                        setLoading(false);
-                    }
-                });
-            }, []);
-
-            const addToCart = () => {
-                let p = Number(selected.precio || 0);
-                const id = clean(selected.id || "");
-                if (id.startsWith('b') || id === 's4' || id === 's5') {
-                    if (config.ingredients.length > 3) p += (config.ingredients.length - 3) * 1000;
-                } else if (id === 'bw1') {
-                    if (config.ingredients.length > 4) p += (config.ingredients.length - 4) * 1000;
-                } else if (id.startsWith('hb')) {
-                    p += config.ingredients.length * 1000;
-                }
-
-                setCart([...cart, { ...selected, cartId: Math.random(), finalPrice: p, config: {...config} }]);
-                setSelected(null);
-                setConfig({ ingredients: [], base: '', protein: '', observations: '' });
-            };
-
-            if (loading) return (
-                <div className="min-h-screen flex flex-col items-center justify-center bg-black text-yellow-500">
-                    <div className="loader w-12 h-12 border-4 border-zinc-800 rounded-full mb-4"></div>
-                    <p className="font-black uppercase tracking-widest text-xs">Sincronizando Carta...</p>
-                </div>
-            );
-
-            if (error) return (
-                <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-                    <AlertCircle size={48} className="text-red-500 mb-4" />
-                    <h2 className="text-yellow-500 font-black uppercase mb-2">Error</h2>
-                    <p className="text-zinc-500 text-sm mb-6">{error}</p>
-                    <button onClick={() => location.reload()} className="bg-yellow-500 text-black px-8 py-3 rounded-full font-black uppercase text-xs">Reintentar</button>
-                </div>
-            );
-
-            const activeItems = menu[tab] || [];
-
-            return (
-                <div className="max-w-md mx-auto min-h-screen bg-black flex flex-col">
-                    {/* Header */}
-                    <header className="p-6 sticky top-0 bg-black/90 backdrop-blur-md z-40 border-b border-zinc-900">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h1 className="text-2xl font-black italic text-yellow-500 tracking-tighter">MAKE YOUR BURGER</h1>
-                                <p className="text-[10px] text-zinc-500 font-bold flex items-center gap-1 mt-1 uppercase tracking-widest"><MapPin size={10}/> Curanilahue</p>
-                            </div>
-                            <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-2 px-3 text-center">
-                                <span className="text-[8px] text-zinc-500 font-black uppercase block mb-0.5">Mesa</span>
-                                <input type="number" placeholder="00" value={table} onChange={e=>setTable(e.target.value)} className="w-8 bg-transparent text-yellow-500 font-black outline-none text-center" />
-                            </div>
+        async function cargarMenu() {
+            const res = await fetch(`${API_URL}?action=getMenu`);
+            const data = await res.json();
+            const container = document.getElementById('menuLista');
+            
+            data.forEach((plato, index) => {
+                const card = document.createElement('div');
+                card.className = `card ${plato.disponible === 'no' ? 'agotado' : ''}`;
+                
+                card.innerHTML = `
+                    <h3>${plato.nombre}</h3>
+                    <p>${plato.descripcion}</p>
+                    <span class="precio">$${plato.precio}</span>
+                    
+                    <div class="seccion-ingredientes">
+                        <strong>Quitar (Base):</strong>
+                        <div class="check-group">
+                            ${plato.ingredientesBase.map(ing => `
+                                <label><input type="checkbox" class="base" value="${ing}" checked> ${ing}</label>
+                            `).join('')}
                         </div>
                         
-                        <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
-                            {[
-                                {id:'burgers', icon:Flame, label:'Burgers'},
-                                {id:'makebowl', icon:Salad, label:'Bowl'},
-                                {id:'hotbowls', icon:Utensils, label:'Hot Bowls'},
-                                {id:'churrascos', icon:ClipboardList, label:'Churrascos'},
-                                {id:'bebestibles', icon:Coffee, label:'Bebidas'}
-                            ].map(t => (
-                                <button key={t.id} onClick={()=>setTab(t.id)} className={`px-4 py-3 rounded-2xl flex flex-col items-center min-w-[75px] transition-all ${tab === t.id ? 'bg-yellow-500 text-black' : 'bg-zinc-900 text-zinc-500'}`}>
-                                    <t.icon size={16} />
-                                    <span className="text-[8px] font-black uppercase mt-1 tracking-tighter">{t.label}</span>
-                                </button>
-                            ))}
+                        <strong>Agregar (Extras):</strong>
+                        <div class="check-group">
+                            ${plato.ingredientesExtra.map(ing => `
+                                <label><input type="checkbox" class="extra" value="${ing}"> ${ing}</label>
+                            `).join('')}
                         </div>
-                    </header>
+                    </div>
 
-                    {/* Lista */}
-                    <main className="p-4 pb-32 flex-1">
-                        {activeItems.map((item, idx) => {
-                            const isAvailable = (item.disponible || "").toUpperCase() === 'SI';
-                            return (
-                                <div key={idx} className={`p-6 bg-zinc-900/20 border border-zinc-900 rounded-[2.5rem] mb-4 ${!isAvailable ? 'opacity-30 grayscale pointer-events-none' : ''}`}>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <div className="flex-1">
-                                            <h3 className="text-lg font-black uppercase italic leading-tight">{item.nombre}</h3>
-                                            <p className="text-[11px] text-zinc-500 mt-2 leading-tight">{item.descripcion || "Receta artesanal Make Your Burger."}</p>
-                                        </div>
-                                        <span className="text-white font-black text-xl ml-4">{formatPrice(item.precio)}</span>
-                                    </div>
-                                    <button onClick={() => setSelected(item)} className="w-full bg-zinc-900 text-zinc-400 py-3 rounded-xl font-black text-[10px] uppercase border border-zinc-800 hover:bg-yellow-500 hover:text-black transition-all">Personalizar</button>
-                                </div>
-                            );
-                        })}
-                    </main>
-
-                    {/* Botón Carrito */}
-                    {cart.length > 0 && (
-                        <div className="fixed bottom-6 left-4 right-4 z-50">
-                            <button onClick={()=>setIsPreview(true)} className="w-full bg-yellow-500 text-black h-16 rounded-[1.5rem] flex justify-between items-center px-8 shadow-2xl font-black italic active:scale-95 transition-all">
-                                <div className="flex items-center gap-4">
-                                    <div className="bg-black text-white px-3 py-1 rounded-full text-[10px] font-black">{cart.length}</div>
-                                    <span className="uppercase text-sm tracking-tighter">Mi Pedido</span>
-                                </div>
-                                <span className="text-xl tracking-tighter">{formatPrice(cart.reduce((s,i)=>s+i.finalPrice, 0))}</span>
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Modal Personalización */}
-                    {selected && (
-                        <div className="fixed inset-0 z-[60] bg-black/95 p-6 overflow-y-auto backdrop-blur-xl">
-                            <div className="max-w-md mx-auto bg-zinc-950 rounded-[3rem] border border-zinc-800 p-8 space-y-8 mt-4 mb-20">
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h2 className="text-2xl font-black uppercase italic text-yellow-500 leading-tight">{selected.nombre}</h2>
-                                        <p className="text-[9px] text-zinc-600 font-black uppercase tracking-widest">Configurar</p>
-                                    </div>
-                                    <button onClick={()=>setSelected(null)} className="p-2 bg-zinc-900 rounded-full text-zinc-500"><X size={20}/></button>
-                                </div>
-
-                                {selected.categoria === 'makebowl' && (
-                                    <>
-                                        <div className="space-y-3">
-                                            <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Base</h5>
-                                            <div className="flex flex-wrap gap-2">
-                                                {BOWL_BASES.map(b => <button key={b} onClick={()=>setConfig({...config, base:b})} className={`px-4 py-2 rounded-xl text-xs font-black border transition-all ${config.base === b ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>{b}</button>)}
-                                            </div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Proteína</h5>
-                                            <div className="flex flex-wrap gap-2">
-                                                {BOWL_PROTEINS.map(p => <button key={p} onClick={()=>setConfig({...config, protein:p})} className={`px-4 py-2 rounded-xl text-xs font-black border transition-all ${config.protein === p ? 'bg-yellow-500 text-black border-yellow-500' : 'bg-zinc-900 border-zinc-800 text-zinc-500'}`}>{p}</button>)}
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
-
-                                <div className="space-y-4">
-                                    <h5 className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Ingredientes Extra (+$1.000)</h5>
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {INGREDIENTS.map(ing => (
-                                            <label key={ing} className={`p-3 rounded-2xl border flex items-center gap-3 transition-all cursor-pointer ${config.ingredients.includes(ing) ? 'border-yellow-500 bg-yellow-500/5' : 'border-zinc-900 bg-zinc-900/40'}`}>
-                                                <input type="checkbox" className="hidden" checked={config.ingredients.includes(ing)} onChange={() => setConfig({...config, ingredients: config.ingredients.includes(ing) ? config.ingredients.filter(i=>i!==ing) : [...config.ingredients, ing]})} />
-                                                <div className={`w-4 h-4 rounded-md border flex items-center justify-center ${config.ingredients.includes(ing) ? 'bg-yellow-500 border-yellow-500' : 'border-zinc-800'}`}>{config.ingredients.includes(ing) && <CheckCircle2 size={12} className="text-black" />}</div>
-                                                <span className={`text-[10px] font-black uppercase tracking-tighter ${config.ingredients.includes(ing) ? 'text-white' : 'text-zinc-600'}`}>{ing}</span>
-                                            </label>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                <textarea placeholder="¿Alguna nota? (ej: sin cebolla)" className="w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-5 text-xs h-28 focus:border-yellow-500 outline-none text-white italic" onChange={e=>setConfig({...config, observations: e.target.value})}></textarea>
-                                <button onClick={addToCart} className="w-full bg-yellow-500 text-black font-black py-5 rounded-[1.5rem] uppercase text-sm shadow-xl shadow-yellow-500/20">Agregar al Pedido</button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Resumen Final */}
-                    {isPreview && (
-                        <div className="fixed inset-0 z-[70] bg-black p-6 flex flex-col">
-                            <div className="flex justify-between items-center mb-10">
-                                <div><h2 className="text-4xl font-black italic text-yellow-500 tracking-tighter">MI PEDIDO</h2><p className="text-zinc-600 text-[10px] font-black uppercase">Mesa {table || '?'}</p></div>
-                                <button onClick={()=>setIsPreview(false)} className="bg-zinc-900 p-3 rounded-full"><X size={24}/></button>
-                            </div>
-                            <div className="flex-1 overflow-y-auto space-y-4">
-                                {cart.map((item, idx) => (
-                                    <div key={idx} className="bg-zinc-900/50 p-6 rounded-[2.5rem] border border-zinc-800 flex justify-between items-center">
-                                        <div>
-                                            <h4 className="font-black text-lg uppercase italic leading-tight">{item.nombre}</h4>
-                                            <span className="text-yellow-500 font-black text-sm">{formatPrice(item.finalPrice)}</span>
-                                            {item.config.ingredients.length > 0 && <p className="text-[8px] text-zinc-500 uppercase mt-1">Extras: {item.config.ingredients.join(', ')}</p>}
-                                        </div>
-                                        <button onClick={()=>{const nc=[...cart]; nc.splice(idx,1); setCart(nc)}} className="text-red-500 p-2"><Minus size={24}/></button>
-                                    </div>
-                                ))}
-                            </div>
-                            <div className="pt-8 border-t border-zinc-900 mt-6">
-                                <div className="flex justify-between items-end mb-8">
-                                    <div><span className="text-zinc-600 text-[10px] font-black uppercase block mb-1">Total</span><span className="text-5xl font-black italic tracking-tighter">{formatPrice(cart.reduce((s,i)=>s+i.finalPrice, 0))}</span></div>
-                                </div>
-                                <button disabled={!table} onClick={()=>{alert("¡Pedido enviado!"); setCart([]); setIsPreview(false);}} className="w-full bg-white text-black font-black py-6 rounded-[2.5rem] text-xl uppercase tracking-tighter disabled:opacity-20 hover:bg-yellow-500 transition-all">Confirmar Pedido</button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+                    <textarea class="input-notas" id="notas-${index}" placeholder="Notas: Ej. bien cocido, sin sal..."></textarea>
+                    <button class="btn-agregar" onclick="agregarAlPedido(${index}, '${plato.nombre}')">AGREGAR</button>
+                `;
+                container.appendChild(card);
+            });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById("root"));
-        root.render(<App />);
+        function agregarAlPedido(index, nombre) {
+            const card = document.getElementsByClassName('card')[index];
+            const notas = document.getElementById(`notas-${index}`).value;
+            
+            // Ver ingredientes seleccionados/quitados
+            const quitados = Array.from(card.querySelectorAll('.base:not(:checked)')).map(c => c.value);
+            const agregados = Array.from(card.querySelectorAll('.extra:checked')).map(c => c.value);
+
+            const item = {
+                nombre: nombre,
+                notas: notas,
+                sin: quitados,
+                con: agregados
+            };
+
+            carrito.push(item);
+            document.getElementById('totalItems').innerText = `Items: ${carrito.length}`;
+            
+            // Feedback visual rápido
+            const btn = card.querySelector('.btn-agregar');
+            btn.innerText = "¡AÑADIDO!";
+            btn.style.background = "#fff";
+            setTimeout(() => { btn.innerText = "AGREGAR"; btn.style.background = "var(--oro)"; }, 1000);
+        }
+
+        async function enviarPedido() {
+            const mesa = document.getElementById('numMesa').value;
+            if (!mesa || carrito.length === 0) {
+                alert("Por favor ingresa número de mesa y añade productos.");
+                return;
+            }
+
+            const payload = {
+                action: 'nuevoPedido',
+                mesa: mesa,
+                items: carrito
+            };
+
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                alert("Pedido enviado con éxito");
+                carrito = [];
+                document.getElementById('totalItems').innerText = `Items: 0`;
+                document.getElementById('numMesa').value = '';
+            }
+        }
+
+        window.onload = cargarMenu;
     </script>
 </body>
 </html>
