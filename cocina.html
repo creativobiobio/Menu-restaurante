@@ -6,287 +6,62 @@
     <title>Newen Creativo - KDS Cocina</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --fondo: #eef2f5;
-            --blanco: #ffffff;
-            --texto: #2c3e50;
-            --borde: #bdc3c7;
-            --rojo-alerta: #e74c3c;
-            --verde-listo: #27ae60;
-        }
-
-        body {
-            background-color: var(--fondo);
-            color: var(--texto);
-            font-family: 'Roboto', sans-serif;
-            margin: 0;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            height: 100vh;
-            box-sizing: border-box;
-        }
-
-        .panel-tickets {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            align-content: flex-start;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .ticket {
-            background: var(--blanco);
-            border: 2px solid var(--borde);
-            border-radius: 8px;
-            width: 280px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .ticket-header {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.3em;
-            font-weight: bold;
-            border-bottom: 2px solid var(--texto);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-        }
-
-        .items-container {
-            flex-grow: 1;
-        }
-
-        .item-pedido {
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 1px dashed var(--borde);
-        }
-
+        :root { --fondo: #eef2f5; --blanco: #ffffff; --texto: #2c3e50; --borde: #bdc3c7; --rojo-alerta: #e74c3c; --verde-listo: #27ae60; }
+        body { background-color: var(--fondo); color: var(--texto); font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: grid; grid-template-columns: 1fr 300px; gap: 20px; height: 100vh; box-sizing: border-box; }
+        .panel-tickets { display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow-y: auto; }
+        .ticket { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; width: 280px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; display: flex; flex-direction: column; }
+        .ticket-header { display: flex; justify-content: space-between; font-size: 1.3em; font-weight: bold; border-bottom: 2px solid var(--texto); padding-bottom: 10px; margin-bottom: 15px; }
+        .item-pedido { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--borde); }
         .item-nombre { font-weight: bold; font-size: 1.2em; }
         .modificador { font-size: 1em; margin-left: 10px; font-weight: bold; }
-        .modificador.quitar { color: #c0392b; }
-        .modificador.agregar { color: #27ae60; }
-        .nota { 
-            font-size: 0.95em; 
-            font-weight: bold;
-            background: #f1c40f; 
-            color: #000;
-            padding: 5px; 
-            margin-top: 5px; 
-            border-radius: 4px;
-        }
-
-        .btn-listo {
-            width: 100%;
-            background: var(--verde-listo);
-            color: white;
-            border: none;
-            padding: 15px;
-            font-size: 1.2em;
-            font-weight: bold;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-            text-transform: uppercase;
-        }
-
-        /* Panel Lateral */
-        .panel-resumen {
-            background: var(--blanco);
-            border: 2px solid var(--borde);
-            border-radius: 8px;
-            padding: 20px;
-            overflow-y: auto;
-            max-height: calc(100vh - 40px);
-            box-shadow: -2px 0 10px rgba(0,0,0,0.05);
-        }
-
-        .panel-resumen h2 {
-            margin-top: 0;
-            border-bottom: 3px solid var(--texto);
-            padding-bottom: 10px;
-            font-size: 1.4em;
-            text-transform: uppercase;
-        }
-
-        .resumen-item {
-            display: flex;
-            justify-content: space-between;
-            font-size: 1.2em;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-        }
-
-        .resumen-item strong {
-            background: var(--texto);
-            color: var(--blanco);
-            padding: 2px 10px;
-            border-radius: 15px;
-        }
-
-        /* Alerta 20 minutos */
-        @keyframes parpadeoRojo {
-            0% { background-color: var(--blanco); }
-            50% { background-color: #ffcccc; border: 2px solid var(--rojo-alerta); }
-            100% { background-color: var(--blanco); }
-        }
-
-        .urgente {
-            animation: parpadeoRojo 1.5s infinite;
-        }
-        
-        .urgente .ticket-header {
-            color: var(--rojo-alerta);
-            border-bottom-color: var(--rojo-alerta);
-        }
+        .modificador.quitar { color: #c0392b; } .modificador.agregar { color: #27ae60; } .modificador.base { color: #2980b9; }
+        .nota { font-size: 0.95em; font-weight: bold; background: #f1c40f; padding: 5px; margin-top: 5px; border-radius: 4px; }
+        .btn-listo { width: 100%; background: var(--verde-listo); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .panel-resumen { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; padding: 20px; overflow-y: auto; }
+        .resumen-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #eee; }
+        @keyframes parpadeoRojo { 0% { background-color: var(--blanco); } 50% { background-color: #ffcccc; } 100% { background-color: var(--blanco); } }
+        .urgente { animation: parpadeoRojo 1.5s infinite; }
     </style>
 </head>
 <body>
-
-    <div class="panel-tickets" id="contenedor-tickets">
-        </div>
-
-    <div class="panel-resumen">
-        <h2>Platos en Cola</h2>
-        <div id="lista-resumen">
-            </div>
-    </div>
-
+    <div class="panel-tickets" id="contenedor-tickets"></div>
+    <div class="panel-resumen"><h2>Cola</h2><div id="lista-resumen"></div></div>
     <script>
-        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbxfCjcNSromuRtOKSBaTpucj6aQHkmwixw8ImYmTwJhMLySeiFT_NrhiUvcMaktukNi/exec';
-        
-        // Sonido de alerta 
-        const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-        const ticketsAlertados = new Set(); 
-
-        async function cargarPedidos() {
+        async function cargar() {
             try {
-                const res = await fetch(`${API_URL}?action=getPedidos`);
-                const pedidos = await res.json();
-                
-                const contenedor = document.getElementById('contenedor-tickets');
-                contenedor.innerHTML = '';
-                
-                let conteoPlatos = {};
-
-                // Invertimos el array para que los más viejos salgan primero arriba a la izquierda
-                pedidos.reverse().forEach(pedido => {
-                    const ticket = document.createElement('div');
-                    ticket.className = 'ticket';
-                    ticket.dataset.id = pedido.id;
-                    ticket.dataset.time = pedido.timestamp;
-
-                    let itemsHTML = '<div class="items-container">';
-                    pedido.items.forEach(item => {
-                        conteoPlatos[item.nombre] = (conteoPlatos[item.nombre] || 0) + 1;
-
-                        let modsHTML = '';
-                        if(item.sin && item.sin.length > 0) {
-                            item.sin.forEach(ing => modsHTML += `<div class="modificador quitar">- SIN ${ing.toUpperCase()}</div>`);
-                        }
-                        if(item.con && item.con.length > 0) {
-                            item.con.forEach(ing => modsHTML += `<div class="modificador agregar">+ EXTRA ${ing.toUpperCase()}</div>`);
-                        }
-                        let notaHTML = item.notas ? `<div class="nota">📝 ${item.notas}</div>` : '';
-
-                        itemsHTML += `
-                            <div class="item-pedido">
-                                <div class="item-nombre">1x ${item.nombre}</div>
-                                ${modsHTML}
-                                ${notaHTML}
-                            </div>
-                        `;
+                const res = await fetch(`${API_URL}?action=getPedidos`); const pedidos = await res.json();
+                const cont = document.getElementById('contenedor-tickets'); cont.innerHTML = '';
+                let resumen = {};
+                pedidos.reverse().forEach(p => {
+                    const t = document.createElement('div'); t.className = 'ticket'; t.dataset.id = p.id; t.dataset.time = p.timestamp;
+                    let itemsH = '';
+                    p.items.forEach(i => {
+                        resumen[i.nombre] = (resumen[i.nombre] || 0) + 1;
+                        let modsH = '';
+                        if(i.baseE?.length) i.baseE.forEach(x => modsH += `<div class="modificador base">🥣 BASE: ${x.toUpperCase()}</div>`);
+                        if(i.protE?.length) i.protE.forEach(x => modsH += `<div class="modificador base">🥩 PROT: ${x.toUpperCase()}</div>`);
+                        if(i.sin?.length) i.sin.forEach(x => modsH += `<div class="modificador quitar">- SIN ${x.toUpperCase()}</div>`);
+                        if(i.con?.length) i.con.forEach(x => modsH += `<div class="modificador agregar">+ EXTRA ${x.toUpperCase()}</div>`);
+                        itemsH += `<div class="item-pedido"><div class="item-nombre">1x ${i.nombre}</div>${modsH}${i.notas?`<div class="nota">📝 ${i.notas}</div>`:''}</div>`;
                     });
-                    itemsHTML += '</div>';
-
-                    const fecha = new Date(pedido.timestamp);
-                    const horaFormateada = fecha.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-
-                    ticket.innerHTML = `
-                        <div class="ticket-header">
-                            <span>Mesa: ${pedido.mesa}</span>
-                            <span>⏱️ ${horaFormateada}</span>
-                        </div>
-                        ${itemsHTML}
-                        <button class="btn-listo" onclick="marcarListo('${pedido.id}')">LISTO ✔️</button>
-                    `;
-                    contenedor.appendChild(ticket);
+                    const h = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    t.innerHTML = `<div class="ticket-header"><span>Mesa: ${p.mesa}</span><span>⏱️ ${h}</span></div>${itemsH}<button class="btn-listo" onclick="marcar('${p.id}')">LISTO</button>`;
+                    cont.appendChild(t);
                 });
-
-                actualizarResumen(conteoPlatos);
-                verificarTiempos();
-
-            } catch (error) {
-                console.error("Error al cargar pedidos:", error);
-            }
+                const lr = document.getElementById('lista-resumen'); lr.innerHTML = '';
+                for (const [k, v] of Object.entries(resumen)) { lr.innerHTML += `<div class="resumen-item"><span>${k}</span><strong>${v}</strong></div>`; }
+                verificar();
+            } catch (e) {}
         }
-
-        function actualizarResumen(conteo) {
-            const lista = document.getElementById('lista-resumen');
-            lista.innerHTML = '';
-            for (const [plato, cantidad] of Object.entries(conteo)) {
-                lista.innerHTML += `
-                    <div class="resumen-item">
-                        <span>${plato}</span>
-                        <strong>${cantidad}</strong>
-                    </div>
-                `;
-            }
-        }
-
-        async function marcarListo(idPedido) {
-            const payload = { action: 'actualizarEstado', idPedido: idPedido, nuevoEstado: 'Listo' };
-            
-            const ticket = document.querySelector(`.ticket[data-id="${idPedido}"]`);
-            if(ticket) {
-                ticket.style.opacity = '0.5';
-                ticket.querySelector('.btn-listo').innerText = 'ACTUALIZANDO...';
-            }
-
-            await fetch(API_URL, {
-                method: 'POST',
-                body: JSON.stringify(payload)
-            });
-            
-            cargarPedidos(); 
-        }
-
-        function verificarTiempos() {
-            const tickets = document.querySelectorAll('.ticket');
+        async function marcar(id) { await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'actualizarEstado', idPedido: id, nuevoEstado: 'Listo' }) }); cargar(); }
+        function verificar() {
             const ahora = new Date().getTime();
-
-            tickets.forEach(ticket => {
-                const tiempoPedido = new Date(ticket.dataset.time).getTime();
-                const diffMinutos = (ahora - tiempoPedido) / 60000;
-
-                if (diffMinutos >= 20) {
-                    ticket.classList.add('urgente');
-                    
-                    if (!ticketsAlertados.has(ticket.dataset.id)) {
-                        ticketsAlertados.add(ticket.dataset.id);
-                        audioAlerta.play().catch(e => console.log("Autoplay bloqueado"));
-                        setTimeout(() => {
-                            audioAlerta.pause();
-                            audioAlerta.currentTime = 0;
-                        }, 5000);
-                    }
-                }
+            document.querySelectorAll('.ticket').forEach(t => {
+                if ((ahora - new Date(t.dataset.time).getTime()) / 60000 >= 20) t.classList.add('urgente');
             });
         }
-
-        window.onload = () => {
-            cargarPedidos();
-            setInterval(cargarPedidos, 10000); 
-            setInterval(verificarTiempos, 5000); 
-        };
+        window.onload = () => { cargar(); setInterval(cargar, 10000); };
     </script>
 </body>
 </html>
