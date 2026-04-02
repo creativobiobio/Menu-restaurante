@@ -63,6 +63,14 @@
         .mod-sin { color: var(--rojo); } .mod-con { color: var(--verde); } .mod-bowl { color: var(--azul); } .mod-nota { color: #f1c40f; }
         .btn-eliminar { background: transparent; color: var(--rojo); border: 1px solid var(--rojo); padding: 5px; border-radius: 4px; font-size: 0.8em; margin-top: 10px; width: 100%; cursor: pointer; }
         .btn-enviar-final { background: var(--oro); color: var(--negro-fondo); border: none; padding: 15px; width: 100%; font-size: 1.1em; font-weight: bold; border-radius: 5px; margin-top: 10px; cursor: pointer; }
+
+        /* NUEVO: DISEÑO DEL POP-UP DE ALERTAS PROFESIONALES */
+        .alerta-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .alerta-box { background: var(--negro-tarjeta); border: 2px solid var(--oro); border-radius: 10px; padding: 25px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.8); }
+        .alerta-box h3 { color: var(--oro); margin-top: 0; font-family: 'Playfair Display', serif; font-size: 1.5em; margin-bottom: 10px; }
+        .alerta-box p { font-size: 1em; margin-bottom: 20px; line-height: 1.4; }
+        .btn-alerta { background: var(--oro); color: var(--negro-fondo); border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 100%; font-size: 1em; transition: 0.3s; }
+        .btn-alerta:active { background: #fff; }
     </style>
 </head>
 <body>
@@ -108,6 +116,14 @@
         </div>
     </div>
 
+    <div id="customAlert" class="alerta-overlay">
+        <div class="alerta-box">
+            <h3>Atención</h3>
+            <p id="customAlertMensaje"></p>
+            <button class="btn-alerta" onclick="cerrarAlerta()">Entendido</button>
+        </div>
+    </div>
+
     <script>
         const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
@@ -117,6 +133,15 @@
         function syncMesa(valor) {
             document.getElementById('numMesa').value = valor;
             document.getElementById('numMesaModal').value = valor;
+        }
+
+        // NUEVAS FUNCIONES DE ALERTA PROFESIONAL
+        function mostrarAlerta(mensaje) {
+            document.getElementById('customAlertMensaje').innerText = mensaje;
+            document.getElementById('customAlert').style.display = 'flex';
+        }
+        function cerrarAlerta() {
+            document.getElementById('customAlert').style.display = 'none';
         }
 
         async function inicializar() {
@@ -156,7 +181,7 @@
             const card = document.getElementById(`card-${idx}`);
             const cat = menuGlobal[idx].categoria.toLowerCase();
             
-            // 1. Cobro por Proteínas (La primera es gratis, luego +$2000 c/u)
+            // 1. Cobro por Proteínas
             const nProteinas = card.querySelectorAll('.proteina:checked').length;
             let costoProteina = 0;
             if (nProteinas > 1) {
@@ -165,27 +190,23 @@
 
             // 2. Cobro por Extras, Bebidas y Micheladas/Frutales
             const extrasSeleccionados = Array.from(card.querySelectorAll('.extra:checked')).map(e => e.value.toLowerCase());
-            let numBebidas = 0;
             let numNormales = 0;
             let costoBebidasYCheladas = 0;
 
             extrasSeleccionados.forEach(ext => {
                 if (ext.includes('bebida')) {
-                    numBebidas++;
                     costoBebidasYCheladas += 1500;
                 } else if (ext.includes('chelada') || ext.includes('michelada')) {
                     costoBebidasYCheladas += 1000;
                 } else if (ext.includes('frutal')) {
                     costoBebidasYCheladas += 1500;
                 } else {
-                    // Ingredientes como salsa extra, queso, etc.
                     numNormales++;
                 }
             });
 
             let costoExtrasNormales = 0;
             
-            // Regla de ingredientes normales (No afecta a micheladas ni bebidas)
             if (cat.includes('bowl')) {
                 if (numNormales >= 5) costoExtrasNormales = (numNormales - 4) * 1000;
             } else if (cat.includes('hamburguesa') || cat.includes('smash')) {
@@ -216,7 +237,6 @@
                 const bBowl = (p.baseBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
                 const pBowl = (p.proteinaBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
 
-                // Ajuste de texto informativo dinámico
                 let textoExtra = "";
                 const catLower = p.categoria.toLowerCase();
                 if (catLower.includes('bowl')) textoExtra = "(5to ingrediente +$1.000)";
@@ -241,9 +261,7 @@
                         <div class="seccion-ingredientes">
                             ${bBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Base:</strong><div class="check-group">${bBowl.map(i => `<label><input type="checkbox" class="base-bowl" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
                             ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína (1 incl, adicionales +$2.000):</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
-                            
                             ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar Opciones/Extras <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
-                            
                             ${!tieneOpciones ? `<p style="color:var(--gris); font-size:0.9em; font-style:italic;">Este plato no tiene extras configurables.</p>` : ''}
                         </div>
                         <textarea class="input-notas" id="notas-${idx}" placeholder="Notas y exclusiones (Ej. sin cebolla, sin papas)..."></textarea>
@@ -296,7 +314,7 @@
         }
 
         function abrirModal() { 
-            if (!carrito.length) { alert("Añade productos al carrito primero."); return; } 
+            if (!carrito.length) { mostrarAlerta("Por favor, añade productos al carrito para continuar."); return; } 
             renderCarrito(); document.getElementById('modalCarrito').style.display='flex'; 
         }
         function cerrarModal() { document.getElementById('modalCarrito').style.display='none'; }
@@ -320,20 +338,20 @@
 
         async function enviarPedido() {
             const m = document.getElementById('numMesaModal').value || document.getElementById('numMesa').value; 
-            if (!m) { alert("⚠️ Por favor ingresa el NÚMERO DE MESA."); return; }
+            if (!m) { mostrarAlerta("Para continuar ingresar numero de mesa por favor."); return; }
             
             const b = document.getElementById('btn-enviar'); b.innerText = "ENVIANDO A COCINA..."; b.disabled = true;
             try {
                 const res = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'nuevoPedido', mesa: m, items: carrito }) });
                 if (res.ok) { 
-                    alert(`✅ ¡Pedido de Mesa ${m} enviado a cocina!`); 
+                    mostrarAlerta(`✅ ¡Pedido de Mesa ${m} enviado a cocina!`); 
                     carrito = []; actualizarBarra(); cerrarModal(); 
                     document.getElementById('numMesa').value = ''; document.getElementById('numMesaModal').value = '';
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                     renderizarMenu('Todas');
                     document.querySelectorAll('.btn-filtro').forEach(x => { x.classList.remove('activo'); if(x.innerText === 'Todas') x.classList.add('activo'); });
                 }
-            } catch (e) { alert("Hubo un error de conexión."); } finally { b.innerText = "CONFIRMAR Y ENVIAR"; b.disabled = false; }
+            } catch (e) { mostrarAlerta("Hubo un error de conexión. Inténtalo nuevamente."); } finally { b.innerText = "CONFIRMAR Y ENVIAR"; b.disabled = false; }
         }
         window.onload = inicializar;
     </script>
