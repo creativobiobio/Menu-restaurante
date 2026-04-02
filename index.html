@@ -134,7 +134,8 @@
     </div>
 
     <script>
-        const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
+        // AQUÍ ESTÁ TU NUEVA URL
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwz1nmVa_IC6zP-nSrot6bPoHzq_Fadwq4xnbsjU6edIZSd2bgAqxwazzxiOcSXG4YcOA/exec';
         
         let carrito = []; let menuGlobal = [];
         function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
@@ -210,14 +211,12 @@
             const card = document.getElementById(`card-${idx}`);
             const cat = menuGlobal[idx].categoria.toLowerCase();
             
-            // 1. Cobro por Proteínas
             const nProteinas = card.querySelectorAll('.proteina:checked').length;
             let costoProteina = 0;
             if (nProteinas > 1) {
                 costoProteina = (nProteinas - 1) * 2000;
             }
 
-            // 2. Cobro por Extras, Bebidas y Micheladas/Frutales
             const extrasSeleccionados = Array.from(card.querySelectorAll('.extra:checked')).map(e => e.value.toLowerCase());
             let numNormales = 0;
             let costoBebidasYCheladas = 0;
