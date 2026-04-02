@@ -109,7 +109,6 @@
     </div>
 
     <script>
-        // URL ACTUALIZADA
         const API_URL = 'https://script.google.com/macros/s/AKfycbwriSZG2BQ-WebKsUb2rzfE_kQF3Dl8t4z6__-aI7PdLTE8s_tTfY7X0mVm_CXbi42mqQ/exec';
         
         let carrito = []; let menuGlobal = [];
@@ -154,21 +153,47 @@
         }
 
         function calcularPrecioFinal(idx, pBase) {
-            const card = document.getElementById(`btn-add-${idx}`).closest('.card');
+            const card = document.getElementById(`card-${idx}`);
             const cat = menuGlobal[idx].categoria.toLowerCase();
-            const nExtras = card.querySelectorAll('.extra:checked').length;
-            let adicional = 0;
             
-            if (cat.includes('bowl')) {
-                if (nExtras >= 5) adicional = (nExtras - 4) * 1000;
-            } else if (cat.includes('hamburguesa') || cat.includes('smash')) {
-                if (nExtras >= 4) adicional = (nExtras - 3) * 1000;
+            // 1. Cobro por Proteínas (La primera es gratis, luego +$2000 c/u)
+            const nProteinas = card.querySelectorAll('.proteina:checked').length;
+            let costoProteina = 0;
+            if (nProteinas > 1) {
+                costoProteina = (nProteinas - 1) * 2000;
             }
 
-            const pFinal = pBase + adicional;
+            // 2. Cobro por Extras y Bebidas
+            const extrasSeleccionados = Array.from(card.querySelectorAll('.extra:checked')).map(e => e.value.toLowerCase());
+            let numBebidas = 0;
+            let numNormales = 0;
+
+            extrasSeleccionados.forEach(ext => {
+                if (ext.includes('bebida')) {
+                    numBebidas++;
+                } else {
+                    // "Salsa Extra" y otros ingredientes caen aquí
+                    numNormales++;
+                }
+            });
+
+            let costoBebidas = numBebidas * 1500;
+            let costoExtrasNormales = 0;
+            
+            // Regla de ingredientes normales
+            if (cat.includes('bowl')) {
+                if (numNormales >= 5) costoExtrasNormales = (numNormales - 4) * 1000;
+            } else if (cat.includes('hamburguesa') || cat.includes('smash')) {
+                if (numNormales >= 4) costoExtrasNormales = (numNormales - 3) * 1000;
+            }
+
+            const pFinal = pBase + costoProteina + costoBebidas + costoExtrasNormales;
             const elP = card.querySelector('.precio');
             elP.innerText = formatoCLP(pFinal);
-            if (adicional > 0) elP.classList.add('aumentado'); else elP.classList.remove('aumentado');
+            
+            if (pFinal > pBase) elP.classList.add('aumentado'); 
+            else elP.classList.remove('aumentado');
+            
             return pFinal;
         }
 
@@ -182,17 +207,16 @@
                 const card = document.createElement('div'); card.className = `card ${agotado ? 'agotado' : ''}`;
                 card.id = `card-${idx}`;
                 
-                const bV = p.ingredientesBase.filter(i => i && i.toUpperCase() !== 'N/A');
                 const eV = p.ingredientesExtra.filter(i => i && i.toUpperCase() !== 'N/A');
                 const bBowl = (p.baseBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
                 const pBowl = (p.proteinaBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
 
                 let textoExtra = "";
                 const catLower = p.categoria.toLowerCase();
-                if (catLower.includes('bowl')) textoExtra = "(Desde el 5to +$1.000)";
-                else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(Desde el 4to +$1.000)";
+                if (catLower.includes('bowl')) textoExtra = "(Bebida +$1.500 | 5to ingrediente +$1.000)";
+                else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(Bebida +$1.500 | 4to ingrediente +$1.000)";
 
-                const tieneOpciones = bV.length > 0 || eV.length > 0 || bBowl.length > 0 || pBowl.length > 0;
+                const tieneOpciones = eV.length > 0 || bBowl.length > 0 || pBowl.length > 0;
 
                 card.innerHTML = `
                     <div class="agotado-badge">AGOTADO</div>
@@ -210,12 +234,11 @@
                     <div class="card-body" id="body-${idx}">
                         <div class="seccion-ingredientes">
                             ${bBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Base:</strong><div class="check-group">${bBowl.map(i => `<label><input type="checkbox" class="base-bowl" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
-                            ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína:</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
-                            ${bV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Quitar (Base):</strong><div class="check-group">${bV.map(i => `<label><input type="checkbox" class="base" value="${i}" checked> ${i}</label>`).join('')}</div>` : ''}
+                            ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína (1 incl, adicionales +$2.000):</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
                             ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras) <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
-                            ${!tieneOpciones ? `<p style="color:var(--gris); font-size:0.9em; font-style:italic;">Este plato no tiene ingredientes configurables.</p>` : ''}
+                            ${!tieneOpciones ? `<p style="color:var(--gris); font-size:0.9em; font-style:italic;">Este plato no tiene extras configurables.</p>` : ''}
                         </div>
-                        <textarea class="input-notas" id="notas-${idx}" placeholder="Notas adicionales (Ej. bien cocida)..."></textarea>
+                        <textarea class="input-notas" id="notas-${idx}" placeholder="Notas y exclusiones (Ej. sin cebolla, sin papas)..."></textarea>
                         <div class="acciones-container">
                             <div class="control-cantidad"><button class="btn-cant" onclick="cambiarCant(${idx},-1)">-</button><span class="num-cant" id="cant-${idx}">1</span><button class="btn-cant" onclick="cambiarCant(${idx},1)">+</button></div>
                             <button class="btn-agregar" id="btn-add-${idx}" onclick="agregar(${idx},'${p.nombre}',${p.precio})">${agotado?'AGOTADO':'AÑADIR'}</button>
@@ -229,18 +252,16 @@
 
         function agregar(idx, n, pB) {
             const card = document.getElementById(`card-${idx}`);
-            const cat = menuGlobal[idx].categoria; // <-- AHORA CAPTURAMOS LA CATEGORÍA AQUÍ
+            const cat = menuGlobal[idx].categoria;
             const nt = document.getElementById(`notas-${idx}`).value;
             const c = parseInt(document.getElementById(`cant-${idx}`).innerText);
             const pF = calcularPrecioFinal(idx, pB);
             
-            const s = Array.from(card.querySelectorAll('.base:not(:checked)')).map(x => x.value);
             const e = Array.from(card.querySelectorAll('.extra:checked')).map(x => x.value);
             const bB = Array.from(card.querySelectorAll('.base-bowl:checked')).map(x => x.value);
             const pP = Array.from(card.querySelectorAll('.proteina:checked')).map(x => x.value);
             
-            // Enviamos la categoría en el objeto del carrito
-            for(let i=0; i<c; i++) { carrito.push({ categoria: cat, nombre: n, notas: nt, sin: s, con: e, baseE: bB, protE: pP, precio: pF }); }
+            for(let i=0; i<c; i++) { carrito.push({ categoria: cat, nombre: n, notas: nt, sin: [], con: e, baseE: bB, protE: pP, precio: pF }); }
             
             actualizarBarra(); 
             const btn = document.getElementById(`btn-add-${idx}`); 
@@ -248,7 +269,6 @@
             
             document.getElementById(`notas-${idx}`).value = '';
             document.getElementById(`cant-${idx}`).innerText = '1';
-            Array.from(card.querySelectorAll('.base')).forEach(x => x.checked = true);
             Array.from(card.querySelectorAll('.extra')).forEach(x => x.checked = false);
             Array.from(card.querySelectorAll('.base-bowl')).forEach(x => x.checked = false);
             Array.from(card.querySelectorAll('.proteina')).forEach(x => x.checked = false);
@@ -281,7 +301,6 @@
                     <div class="item-detalles">
                         ${i.baseE?.length?`<div class="mod-bowl">🥣 Base: ${i.baseE.join(', ')}</div>`:''}
                         ${i.protE?.length?`<div class="mod-bowl">🥩 Prot: ${i.protE.join(', ')}</div>`:''}
-                        ${i.sin.length?`<div class="mod-sin">- Sin: ${i.sin.join(', ')}</div>`:''}
                         ${i.con.length?`<div class="mod-con">+ Extra: ${i.con.join(', ')}</div>`:''}
                         ${i.notas?`<div class="mod-nota">📝 ${i.notas}</div>`:''}
                     </div><button class="btn-eliminar" onclick="eliminar(${idx})">Eliminar Plato</button></div>`;
