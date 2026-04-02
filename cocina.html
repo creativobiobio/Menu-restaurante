@@ -1,76 +1,350 @@
-const SHEET_ID = '15CGzhVtlGXHQFPFS3pg1L5O2h5PCtyqmtjHARZz3Atw'; 
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Newen Creativo - KDS Cocina</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --fondo: #eef2f5; --blanco: #ffffff; --texto: #2c3e50; --borde: #bdc3c7; --amarillo: #f1c40f; --rojo: #e74c3c; --verde: #27ae60; --oro: #D4AF37; }
+        body { background-color: var(--fondo); color: var(--texto); font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; display: grid; grid-template-columns: 1fr 350px; gap: 20px; height: 100vh; box-sizing: border-box; }
+        
+        .panel-tickets { display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; overflow-y: auto; padding-right: 10px; }
+        .ticket { background: var(--blanco); border: 2px solid var(--borde); border-radius: 8px; width: 280px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; transition: background 0.5s; }
+        .ticket-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--texto); padding-bottom: 10px; margin-bottom: 15px; }
+        .mesa-num { font-size: 1.4em; font-weight: bold; }
+        .tiempo-info { display: flex; flex-direction: column; align-items: flex-end; }
+        .cronometro { font-size: 1.3em; font-weight: bold; }
+        .hora-pedido { font-size: 0.8em; color: #7f8c8d; }
+        
+        .items-container { flex-grow: 1; }
+        .item-pedido { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px dashed var(--borde); }
+        .item-nombre { font-weight: bold; font-size: 1.2em; line-height: 1.2; }
+        .item-categoria { display: block; color: var(--oro); font-size: 0.65em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        
+        .modificador { font-size: 1em; margin-left: 10px; font-weight: bold; }
+        .modificador.quitar { color: #c0392b; } .modificador.agregar { color: #27ae60; } .modificador.base { color: #2980b9; }
+        .nota { font-size: 0.95em; font-weight: bold; background: #ffeaa7; padding: 5px; margin-top: 5px; border-radius: 4px; color: #000; }
+        .btn-listo { width: 100%; background: var(--verde); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; text-transform: uppercase;}
+        
+        .preventivo { background-color: #fffacd; border-color: var(--amarillo); }
+        .preventivo .ticket-header { color: #b8860b; border-color: #b8860b; }
+        
+        @keyframes parpadeoRojo { 0% { background-color: var(--blanco); } 50% { background-color: #ffcccc; border-color: var(--rojo); } 100% { background-color: var(--blanco); } }
+        .urgente { animation: parpadeoRojo 1.5s infinite; }
+        .urgente .ticket-header { color: var(--rojo); border-color: var(--rojo); }
 
-function doGet(e) {
-  const action = e.parameter.action;
-  if (action === 'getMenu') return ContentService.createTextOutput(JSON.stringify(obtenerMenu())).setMimeType(ContentService.MimeType.JSON);
-  if (action === 'getPedidos') return ContentService.createTextOutput(JSON.stringify(obtenerPedidosHoy())).setMimeType(ContentService.MimeType.JSON);
-}
+        .panel-resumen { background: var(--negro-tarjeta, #1a1a1a); color: var(--blanco); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
+        .resumen-header { border-bottom: 2px solid var(--oro); padding-bottom: 15px; margin-bottom: 15px; text-align: center; position: relative; }
+        .resumen-header h2 { margin: 0 0 5px 0; color: var(--oro); font-family: 'Playfair Display', serif; }
+        .total-ventas { font-size: 2em; font-weight: bold; color: var(--verde); }
+        
+        .btn-limpiar { position: absolute; top: 0; right: 0; background: transparent; color: var(--gris); border: 1px solid var(--gris); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; transition: 0.3s; }
+        .btn-limpiar:hover { background: rgba(255,255,255,0.1); color: var(--blanco); }
 
-function doPost(e) {
-  const ss = SpreadsheetApp.openById(SHEET_ID);
-  let sheetPedidos = ss.getSheetByName("Pedidos");
-  if (!sheetPedidos) {
-    sheetPedidos = ss.insertSheet("Pedidos");
-    sheetPedidos.appendRow(["ID Pedido", "Fecha y Hora", "Mesa", "Detalle del Pedido", "Estado", "Hora Finalizado"]);
-  }
-  const data = JSON.parse(e.postData.contents);
-  if (data.action === 'nuevoPedido') {
-    const ahora = new Date();
-    const idPedido = "P-" + ahora.getTime().toString().slice(-5);
-    // Agregamos un espacio vacío al final para la "Hora Finalizado" que se llenará luego
-    sheetPedidos.appendRow([idPedido, ahora, data.mesa, JSON.stringify(data.items), "En preparación", ""]);
-    return ContentService.createTextOutput(JSON.stringify({status: "ok", id: idPedido})).setMimeType(ContentService.MimeType.JSON);
-  }
-  if (data.action === 'actualizarEstado') {
-    const rows = sheetPedidos.getDataRange().getValues();
-    const ahora = new Date(); // Capturamos el segundo exacto en que sale el plato
-    for (let i = 1; i < rows.length; i++) {
-      if (rows[i][0] === data.idPedido) {
-        sheetPedidos.getRange(i + 1, 5).setValue(data.nuevoEstado);
-        sheetPedidos.getRange(i + 1, 6).setValue(ahora); // Guardamos la hora de salida en la columna 6
-        break;
-      }
-    }
-    return ContentService.createTextOutput(JSON.stringify({status: "actualizado"})).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+        .lista-ventas { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
+        .venta-item { background: #2d2d2d; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid var(--oro); }
+        .venta-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; color: #fff; }
+        .venta-mesa { font-weight: bold; font-size: 1.1em; color: var(--oro); }
+        .venta-precio { font-weight: bold; color: var(--verde); font-size: 1.1em; }
+        
+        /* NUEVO DISEÑO PARA TIEMPOS */
+        .venta-tiempos { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+        .badge-tiempo { background: #1a1a1a; color: #bbb; padding: 4px 8px; border-radius: 4px; font-size: 0.75em; display: inline-flex; align-items: center; border: 1px solid #333; }
+        .badge-diff { color: var(--oro); border-color: var(--oro); background: rgba(212, 175, 55, 0.1); font-weight: bold; }
 
-function obtenerMenu() {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Menu");
-  const datos = sheet.getDataRange().getValues();
-  const menu = [];
-  for (let i = 1; i < datos.length; i++) {
-    const fila = datos[i];
-    if (!fila[1]) continue; 
-    menu.push({
-      categoria: fila[0], nombre: fila[1], descripcion: fila[2], precio: fila[3],
-      ingredientesBase: fila[4] ? fila[4].toString().split(',').map(s => s.trim()) : [],
-      ingredientesExtra: fila[5] ? fila[5].toString().split(',').map(s => s.trim()) : [],
-      disponible: fila[6] ? fila[6].toString().toLowerCase().trim() : "si",
-      baseBowl: fila[7] ? fila[7].toString().split(',').map(s => s.trim()) : [],
-      proteinaBowl: fila[8] ? fila[8].toString().split(',').map(s => s.trim()) : []
-    });
-  }
-  return menu;
-}
+        .btn-toggle-venta { background: rgba(212, 175, 55, 0.1); color: var(--oro); border: 1px dashed var(--oro); border-radius: 4px; cursor: pointer; width: 100%; text-align: center; padding: 8px; margin-top: 10px; font-size: 0.85em; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
+        .btn-toggle-venta:hover { background: rgba(212, 175, 55, 0.2); }
 
-function obtenerPedidosHoy() {
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName("Pedidos");
-  if (!sheet) return [];
-  const datos = sheet.getDataRange().getValues();
-  const pedidos = [];
-  const hoy = new Date();
-  const fechaStringHoy = hoy.toLocaleDateString('es-CL');
+        /* MODAL ALERTA PROFESIONAL */
+        .alerta-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .alerta-box { background: #1a1a1a; border: 2px solid var(--oro); border-radius: 10px; padding: 25px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.8); color: white; }
+        .alerta-box h3 { color: var(--oro); margin-top: 0; font-size: 1.5em; margin-bottom: 10px; }
+        .alerta-box p { font-size: 1em; margin-bottom: 20px; line-height: 1.4; }
+        .btn-alerta { border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 48%; font-size: 0.9em; transition: 0.3s; }
+        .btn-confirmar { background: var(--oro); color: #1a1a1a; }
+        .btn-cancelar { background: #444; color: #fff; }
+    </style>
+</head>
+<body>
+    <div class="panel-tickets" id="contenedor-tickets"></div>
+    
+    <div class="panel-resumen">
+        <div class="resumen-header">
+            <h2>Ventas del Día</h2>
+            <button class="btn-limpiar" onclick="abrirConfirmacionLimpieza()">🧹 Limpiar</button>
+            <div class="total-ventas" id="total-ventas-hoy">$0</div>
+        </div>
+        <div class="lista-ventas" id="lista-resumen">
+            </div>
+    </div>
 
-  for (let i = 1; i < datos.length; i++) {
-    const fechaPedido = new Date(datos[i][1]);
-    if (fechaPedido.toLocaleDateString('es-CL') === fechaStringHoy) {
-      pedidos.push({
-        id: datos[i][0], timestamp: datos[i][1], mesa: datos[i][2],
-        items: JSON.parse(datos[i][3]), estado: datos[i][4],
-        timestampListo: datos[i][5] || null // Extraemos la hora de salida
-      });
-    }
-  }
-  return pedidos;
-}
+    <div id="modalConfirm" class="alerta-overlay">
+        <div class="alerta-box">
+            <h3>Limpiar Turno</h3>
+            <p>¿Deseas vaciar la pantalla para iniciar un nuevo turno? <br><br><span style="font-size:0.85em; color:#bbb;">(Tus datos anteriores seguirán a salvo en el Excel).</span></p>
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+                <button class="btn-alerta btn-cancelar" onclick="cerrarConfirmacion()">Cancelar</button>
+                <button class="btn-alerta btn-confirmar" onclick="ejecutarLimpieza()">Sí, Limpiar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // LA NUEVA URL HA SIDO INTEGRADA AQUÍ:
+        const API_URL = 'AQUI_TU_NUEVA_URL';
+        
+        const audioAlerta = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+        const ticketsAlertados = new Set(); 
+        let cronometros = [];
+        const ventasExpandidas = new Set();
+
+        let fechaCierreTurno = parseInt(localStorage.getItem('newenCierreTurno')) || 0;
+
+        function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
+
+        function abrirConfirmacionLimpieza() {
+            document.getElementById('modalConfirm').style.display = 'flex';
+        }
+
+        function cerrarConfirmacion() {
+            document.getElementById('modalConfirm').style.display = 'none';
+        }
+
+        function ejecutarLimpieza() {
+            fechaCierreTurno = new Date().getTime();
+            localStorage.setItem('newenCierreTurno', fechaCierreTurno);
+            cerrarConfirmacion();
+            cargar();
+        }
+
+        function toggleVenta(id) {
+            const detalles = document.getElementById(`venta-detalles-${id}`);
+            const btn = document.getElementById(`btn-venta-${id}`);
+            
+            if (detalles.style.display === 'none') {
+                detalles.style.display = 'block';
+                ventasExpandidas.add(id);
+                if (btn) btn.innerHTML = 'Ocultar Detalles ▲';
+            } else {
+                detalles.style.display = 'none';
+                ventasExpandidas.delete(id);
+                if (btn) btn.innerHTML = 'Ver Detalles ▼';
+            }
+        }
+
+        async function cargar() {
+            try {
+                const res = await fetch(`${API_URL}?action=getPedidos`); 
+                const pedidos = await res.json();
+                
+                const cont = document.getElementById('contenedor-tickets'); 
+                const listaVentas = document.getElementById('lista-resumen');
+                
+                const scrollPos = listaVentas.scrollTop;
+                
+                cont.innerHTML = '';
+                let htmlVentas = '';
+                
+                cronometros.forEach(clearInterval);
+                cronometros = [];
+
+                let totalDia = 0;
+
+                const pedidosActivos = pedidos.filter(p => p.estado === 'En preparación').reverse();
+                
+                const ventasDelTurno = pedidos.filter(p => {
+                    const tiempoPedido = new Date(p.timestamp).getTime();
+                    return tiempoPedido >= fechaCierreTurno;
+                });
+
+                // 1. GENERAR HISTORIAL (PANEL DERECHO)
+                ventasDelTurno.forEach(p => {
+                    let totalPedido = 0;
+                    let conteoPlatos = {};
+                    p.items.forEach(i => {
+                        totalPedido += i.precio;
+                        const cat = i.categoria || 'Varios';
+                        const llave = `${cat}|||${i.nombre}`;
+                        conteoPlatos[llave] = (conteoPlatos[llave] || 0) + 1;
+                    });
+                    
+                    totalDia += totalPedido;
+                    const cantidadTotalItems = p.items.length;
+
+                    let platosHTML = '';
+                    for (const [llave, cant] of Object.entries(conteoPlatos)) {
+                        const [categoria, nombre] = llave.split('|||');
+                        platosHTML += `<div style="font-size: 0.9em; color: #ccc; margin-bottom: 4px;"><strong style="color:var(--oro)">[${categoria}]</strong> ${cant}x ${nombre}</div>`;
+                    }
+
+                    const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(Cocina)</span>';
+                    
+                    // --- NUEVA LÓGICA DE TIEMPOS PROFESIONAL ---
+                    const horaEntrada = new Date(p.timestamp);
+                    const horaEntradaStr = horaEntrada.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    let tiemposHTML = '';
+                    
+                    if (p.estado === 'Listo' && p.timestampListo) {
+                        const horaSalida = new Date(p.timestampListo);
+                        const horaSalidaStr = horaSalida.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                        
+                        const diffMs = horaSalida.getTime() - horaEntrada.getTime();
+                        const minsTotal = Math.floor(diffMs / 60000);
+                        const horasDiff = Math.floor(minsTotal / 60);
+                        const minsDiff = minsTotal % 60;
+                        
+                        let diffStr = '';
+                        if (horasDiff > 0) {
+                            diffStr = `${horasDiff}h ${minsDiff}m`;
+                        } else {
+                            diffStr = `${minsDiff} min`;
+                        }
+
+                        tiemposHTML = `
+                            <div class="venta-tiempos">
+                                <span class="badge-tiempo">📥 ${horaEntradaStr}</span>
+                                <span class="badge-tiempo">📤 ${horaSalidaStr}</span>
+                                <span class="badge-tiempo badge-diff">⏱️ ${diffStr}</span>
+                            </div>
+                        `;
+                    } else {
+                        tiemposHTML = `
+                            <div class="venta-tiempos">
+                                <span class="badge-tiempo">📥 ${horaEntradaStr}</span>
+                                <span class="badge-tiempo" style="color:#f39c12">⏳ Cocinando...</span>
+                            </div>
+                        `;
+                    }
+                    // ------------------------------------------
+
+                    const esColapsable = cantidadTotalItems > 3;
+                    const estaExpandido = ventasExpandidas.has(p.id);
+                    
+                    let displayDetalles = esColapsable && !estaExpandido ? 'none' : 'block';
+                    let textoBoton = estaExpandido ? 'Ocultar Detalles ▲' : 'Ver Detalles ▼';
+
+                    htmlVentas += `
+                        <div class="venta-item">
+                            <div class="venta-top" ${esColapsable ? `onclick="toggleVenta('${p.id}')" style="cursor:pointer;"` : ''}>
+                                <div style="display:flex; flex-direction:column;">
+                                    <span class="venta-mesa">Mesa ${p.mesa} ${estadoHTML}</span>
+                                    <span style="font-size:0.85em; color:#aaa; font-weight:normal;">${cantidadTotalItems} item${cantidadTotalItems !== 1 ? 's' : ''}</span>
+                                </div>
+                                <span class="venta-precio">${formatoCLP(totalPedido)}</span>
+                            </div>
+                            
+                            ${tiemposHTML}
+                            
+                            <div id="venta-detalles-${p.id}" style="display:${displayDetalles}; margin-top:5px; border-top:1px solid #444; padding-top:10px;">
+                                ${platosHTML}
+                            </div>
+                            
+                            ${esColapsable ? `<button onclick="toggleVenta('${p.id}')" id="btn-venta-${p.id}" class="btn-toggle-venta">${textoBoton}</button>` : ''}
+                        </div>
+                    `;
+                });
+
+                document.getElementById('total-ventas-hoy').innerText = formatoCLP(totalDia);
+                listaVentas.innerHTML = htmlVentas;
+                listaVentas.scrollTop = scrollPos;
+
+                // 2. GENERAR TICKETS DE COCINA (PANEL IZQUIERDO)
+                pedidosActivos.forEach(p => {
+                    const t = document.createElement('div'); 
+                    t.className = 'ticket'; 
+                    t.dataset.id = p.id; 
+                    t.dataset.time = p.timestamp;
+
+                    let itemsH = '';
+                    p.items.forEach(i => {
+                        let modsH = '';
+                        const cat = i.categoria || 'Varios';
+                        
+                        if(i.baseE?.length) i.baseE.forEach(x => modsH += `<div class="modificador base">🥣 BASE: ${x.toUpperCase()}</div>`);
+                        if(i.protE?.length) i.protE.forEach(x => modsH += `<div class="modificador base">🥩 PROT: ${x.toUpperCase()}</div>`);
+                        if(i.sin?.length) i.sin.forEach(x => modsH += `<div class="modificador quitar">- SIN ${x.toUpperCase()}</div>`);
+                        if(i.con?.length) i.con.forEach(x => modsH += `<div class="modificador agregar">+ EXTRA ${x.toUpperCase()}</div>`);
+                        
+                        itemsH += `
+                            <div class="item-pedido">
+                                <div class="item-nombre">
+                                    <span class="item-categoria">${cat}</span>
+                                    1x ${i.nombre}
+                                </div>
+                                ${modsH}
+                                ${i.notas?`<div class="nota">📝 ${i.notas}</div>`:''}
+                            </div>`;
+                    });
+
+                    const horaPed = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    
+                    t.innerHTML = `
+                        <div class="ticket-header">
+                            <span class="mesa-num">Mesa: ${p.mesa}</span>
+                            <div class="tiempo-info">
+                                <span class="cronometro" id="timer-${p.id}">00:00</span>
+                                <span class="hora-pedido">Ped: ${horaPed}</span>
+                            </div>
+                        </div>
+                        <div class="items-container">${itemsH}</div>
+                        <button class="btn-listo" onclick="marcar('${p.id}')">LISTO ✔️</button>
+                    `;
+                    cont.appendChild(t);
+
+                    actualizarCronometro(p.id, p.timestamp);
+                    const intervalo = setInterval(() => actualizarCronometro(p.id, p.timestamp), 1000);
+                    cronometros.push(intervalo);
+                });
+
+            } catch (e) { console.error("Error cargando pedidos."); }
+        }
+
+        function actualizarCronometro(id, timestampStr) {
+            const ticket = document.querySelector(`.ticket[data-id="${id}"]`);
+            if (!ticket) return;
+
+            const ahora = new Date().getTime();
+            const tiempoPedido = new Date(timestampStr).getTime();
+            const diffMs = ahora - tiempoPedido;
+            
+            const minutos = Math.floor(diffMs / 60000);
+            const segundos = Math.floor((diffMs % 60000) / 1000);
+            
+            const timerEl = document.getElementById(`timer-${id}`);
+            if (timerEl) {
+                const horas = Math.floor(minutos / 60);
+                const minsRestantes = minutos % 60;
+                
+                if (horas > 0) {
+                    timerEl.innerText = `${horas}h ${minsRestantes.toString().padStart(2, '0')}m`;
+                } else {
+                    timerEl.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                }
+            }
+
+            if (minutos >= 20) {
+                ticket.classList.remove('preventivo');
+                ticket.classList.add('urgente');
+                if (!ticketsAlertados.has(id)) {
+                    ticketsAlertados.add(id);
+                    audioAlerta.play().catch(e => console.log("Audio bloqueado"));
+                    setTimeout(() => { audioAlerta.pause(); audioAlerta.currentTime = 0; }, 5000);
+                }
+            } else if (minutos >= 10) {
+                ticket.classList.add('preventivo');
+            }
+        }
+
+        async function marcar(id) { 
+            const ticket = document.querySelector(`.ticket[data-id="${id}"]`);
+            if(ticket) ticket.style.opacity = '0.5';
+            await fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'actualizarEstado', idPedido: id, nuevoEstado: 'Listo' }) }); 
+            cargar(); 
+        }
+
+        window.onload = () => { cargar(); setInterval(cargar, 10000); };
+    </script>
+</body>
+</html>
