@@ -163,31 +163,36 @@
                 costoProteina = (nProteinas - 1) * 2000;
             }
 
-            // 2. Cobro por Extras y Bebidas
+            // 2. Cobro por Extras, Bebidas y Micheladas/Frutales
             const extrasSeleccionados = Array.from(card.querySelectorAll('.extra:checked')).map(e => e.value.toLowerCase());
             let numBebidas = 0;
             let numNormales = 0;
+            let costoBebidasYCheladas = 0;
 
             extrasSeleccionados.forEach(ext => {
                 if (ext.includes('bebida')) {
                     numBebidas++;
+                    costoBebidasYCheladas += 1500;
+                } else if (ext.includes('chelada') || ext.includes('michelada')) {
+                    costoBebidasYCheladas += 1000;
+                } else if (ext.includes('frutal')) {
+                    costoBebidasYCheladas += 1500;
                 } else {
-                    // "Salsa Extra" y otros ingredientes caen aquí
+                    // Ingredientes como salsa extra, queso, etc.
                     numNormales++;
                 }
             });
 
-            let costoBebidas = numBebidas * 1500;
             let costoExtrasNormales = 0;
             
-            // Regla de ingredientes normales
+            // Regla de ingredientes normales (No afecta a micheladas ni bebidas)
             if (cat.includes('bowl')) {
                 if (numNormales >= 5) costoExtrasNormales = (numNormales - 4) * 1000;
             } else if (cat.includes('hamburguesa') || cat.includes('smash')) {
                 if (numNormales >= 4) costoExtrasNormales = (numNormales - 3) * 1000;
             }
 
-            const pFinal = pBase + costoProteina + costoBebidas + costoExtrasNormales;
+            const pFinal = pBase + costoProteina + costoBebidasYCheladas + costoExtrasNormales;
             const elP = card.querySelector('.precio');
             elP.innerText = formatoCLP(pFinal);
             
@@ -211,10 +216,11 @@
                 const bBowl = (p.baseBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
                 const pBowl = (p.proteinaBowl || []).filter(i => i && i.toUpperCase() !== 'N/A');
 
+                // Ajuste de texto informativo dinámico
                 let textoExtra = "";
                 const catLower = p.categoria.toLowerCase();
-                if (catLower.includes('bowl')) textoExtra = "(Bebida +$1.500 | 5to ingrediente +$1.000)";
-                else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(Bebida +$1.500 | 4to ingrediente +$1.000)";
+                if (catLower.includes('bowl')) textoExtra = "(5to ingrediente +$1.000)";
+                else if (catLower.includes('hamburguesa') || catLower.includes('smash')) textoExtra = "(4to ingrediente +$1.000)";
 
                 const tieneOpciones = eV.length > 0 || bBowl.length > 0 || pBowl.length > 0;
 
@@ -235,7 +241,9 @@
                         <div class="seccion-ingredientes">
                             ${bBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Base:</strong><div class="check-group">${bBowl.map(i => `<label><input type="checkbox" class="base-bowl" value="${i}"> ${i}</label>`).join('')}</div>` : ''}
                             ${pBowl.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Elegir Proteína (1 incl, adicionales +$2.000):</strong><div class="check-group">${pBowl.map(i => `<label><input type="checkbox" class="proteina" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
-                            ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar (Extras) <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
+                            
+                            ${eV.length ? `<strong style="color:var(--oro); display:block; margin-bottom:5px;">Agregar Opciones/Extras <span style="font-size:0.8em; font-weight:normal; color:var(--gris);">${textoExtra}</span>:</strong><div class="check-group">${eV.map(i => `<label><input type="checkbox" class="extra" value="${i}" onchange="calcularPrecioFinal(${idx}, ${p.precio})"> ${i}</label>`).join('')}</div>` : ''}
+                            
                             ${!tieneOpciones ? `<p style="color:var(--gris); font-size:0.9em; font-style:italic;">Este plato no tiene extras configurables.</p>` : ''}
                         </div>
                         <textarea class="input-notas" id="notas-${idx}" placeholder="Notas y exclusiones (Ej. sin cebolla, sin papas)..."></textarea>
