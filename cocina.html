@@ -25,7 +25,7 @@
         .modificador { font-size: 1em; margin-left: 10px; font-weight: bold; }
         .modificador.quitar { color: #c0392b; } .modificador.agregar { color: #27ae60; } .modificador.base { color: #2980b9; }
         .nota { font-size: 0.95em; font-weight: bold; background: #ffeaa7; padding: 5px; margin-top: 5px; border-radius: 4px; color: #000; }
-        .btn-listo { width: 100%; background: var(--verde); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+        .btn-listo { width: 100%; background: var(--verde); color: white; border: none; padding: 15px; font-size: 1.2em; font-weight: bold; border-radius: 5px; cursor: pointer; margin-top: 10px; text-transform: uppercase;}
         
         .preventivo { background-color: #fffacd; border-color: var(--amarillo); }
         .preventivo .ticket-header { color: #b8860b; border-color: #b8860b; }
@@ -35,18 +35,31 @@
         .urgente .ticket-header { color: var(--rojo); border-color: var(--rojo); }
 
         .panel-resumen { background: var(--negro-tarjeta, #1a1a1a); color: var(--blanco); border-radius: 8px; padding: 20px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
-        .resumen-header { border-bottom: 2px solid var(--oro); padding-bottom: 15px; margin-bottom: 15px; text-align: center; }
+        .resumen-header { border-bottom: 2px solid var(--oro); padding-bottom: 15px; margin-bottom: 15px; text-align: center; position: relative; }
         .resumen-header h2 { margin: 0 0 5px 0; color: var(--oro); font-family: 'Playfair Display', serif; }
         .total-ventas { font-size: 2em; font-weight: bold; color: var(--verde); }
         
+        .btn-limpiar { position: absolute; top: 0; right: 0; background: transparent; color: var(--gris); border: 1px solid var(--gris); padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 0.8em; transition: 0.3s; }
+        .btn-limpiar:hover { background: rgba(255,255,255,0.1); color: var(--blanco); }
+
         .lista-ventas { flex-grow: 1; overflow-y: auto; padding-right: 5px; }
         .venta-item { background: #2d2d2d; padding: 15px; border-radius: 5px; margin-bottom: 10px; border-left: 3px solid var(--oro); }
         .venta-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px; color: #fff; }
         .venta-mesa { font-weight: bold; font-size: 1.1em; color: var(--oro); }
         .venta-precio { font-weight: bold; color: var(--verde); font-size: 1.1em; }
+        .venta-hora { font-size: 0.8em; color: #888; margin-bottom: 8px; }
         
         .btn-toggle-venta { background: rgba(212, 175, 55, 0.1); color: var(--oro); border: 1px dashed var(--oro); border-radius: 4px; cursor: pointer; width: 100%; text-align: center; padding: 8px; margin-top: 10px; font-size: 0.85em; font-weight: bold; text-transform: uppercase; transition: 0.3s; }
         .btn-toggle-venta:hover { background: rgba(212, 175, 55, 0.2); }
+
+        /* MODAL ALERTA PROFESIONAL */
+        .alerta-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; justify-content: center; align-items: center; z-index: 200; }
+        .alerta-box { background: #1a1a1a; border: 2px solid var(--oro); border-radius: 10px; padding: 25px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.8); color: white; }
+        .alerta-box h3 { color: var(--oro); margin-top: 0; font-size: 1.5em; margin-bottom: 10px; }
+        .alerta-box p { font-size: 1em; margin-bottom: 20px; line-height: 1.4; }
+        .btn-alerta { border: none; padding: 12px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; width: 48%; font-size: 0.9em; transition: 0.3s; }
+        .btn-confirmar { background: var(--oro); color: #1a1a1a; }
+        .btn-cancelar { background: #444; color: #fff; }
     </style>
 </head>
 <body>
@@ -55,10 +68,22 @@
     <div class="panel-resumen">
         <div class="resumen-header">
             <h2>Ventas del Día</h2>
+            <button class="btn-limpiar" onclick="abrirConfirmacionLimpieza()">🧹 Limpiar</button>
             <div class="total-ventas" id="total-ventas-hoy">$0</div>
         </div>
         <div class="lista-ventas" id="lista-resumen">
             </div>
+    </div>
+
+    <div id="modalConfirm" class="alerta-overlay">
+        <div class="alerta-box">
+            <h3>Limpiar Turno</h3>
+            <p>¿Deseas vaciar la pantalla para iniciar un nuevo turno? <br><br><span style="font-size:0.85em; color:#bbb;">(Tus datos anteriores seguirán a salvo en el Excel).</span></p>
+            <div style="display:flex; justify-content:space-between; gap:10px;">
+                <button class="btn-alerta btn-cancelar" onclick="cerrarConfirmacion()">Cancelar</button>
+                <button class="btn-alerta btn-confirmar" onclick="ejecutarLimpieza()">Sí, Limpiar</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -68,10 +93,27 @@
         const ticketsAlertados = new Set(); 
         let cronometros = [];
         
-        // Memoria para recordar qué tickets del historial expandiste
         const ventasExpandidas = new Set();
 
+        // Lógica de Memoria de Turno (Frontend)
+        let fechaCierreTurno = parseInt(localStorage.getItem('newenCierreTurno')) || 0;
+
         function formatoCLP(v) { return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(v); }
+
+        function abrirConfirmacionLimpieza() {
+            document.getElementById('modalConfirm').style.display = 'flex';
+        }
+
+        function cerrarConfirmacion() {
+            document.getElementById('modalConfirm').style.display = 'none';
+        }
+
+        function ejecutarLimpieza() {
+            fechaCierreTurno = new Date().getTime();
+            localStorage.setItem('newenCierreTurno', fechaCierreTurno);
+            cerrarConfirmacion();
+            cargar(); // Recarga la pantalla aplicando el nuevo filtro
+        }
 
         function toggleVenta(id) {
             const detalles = document.getElementById(`venta-detalles-${id}`);
@@ -96,7 +138,6 @@
                 const cont = document.getElementById('contenedor-tickets'); 
                 const listaVentas = document.getElementById('lista-resumen');
                 
-                // Guardamos la posición del scroll del panel derecho antes de actualizar
                 const scrollPos = listaVentas.scrollTop;
                 
                 cont.innerHTML = '';
@@ -108,10 +149,15 @@
                 let totalDia = 0;
 
                 const pedidosActivos = pedidos.filter(p => p.estado === 'En preparación').reverse();
-                const todosLosPedidos = pedidos;
+                
+                // Filtramos las ventas del panel derecho para que solo muestre las que se hicieron DESPUÉS del último cierre de turno
+                const ventasDelTurno = pedidos.filter(p => {
+                    const tiempoPedido = new Date(p.timestamp).getTime();
+                    return tiempoPedido >= fechaCierreTurno;
+                });
 
                 // 1. GENERAR HISTORIAL (PANEL DERECHO)
-                todosLosPedidos.forEach(p => {
+                ventasDelTurno.forEach(p => {
                     let totalPedido = 0;
                     let conteoPlatos = {};
                     p.items.forEach(i => {
@@ -131,8 +177,8 @@
                     }
 
                     const estadoHTML = p.estado === 'Listo' ? '<span style="color:#27ae60; font-size:0.8em;">(Entregado)</span>' : '<span style="color:#f39c12; font-size:0.8em;">(Cocina)</span>';
+                    const horaFormateada = new Date(p.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
 
-                    // Lógica de colapso si hay más de 3 platos
                     const esColapsable = cantidadTotalItems > 3;
                     const estaExpandido = ventasExpandidas.has(p.id);
                     
@@ -144,12 +190,13 @@
                             <div class="venta-top" ${esColapsable ? `onclick="toggleVenta('${p.id}')" style="cursor:pointer;"` : ''}>
                                 <div style="display:flex; flex-direction:column;">
                                     <span class="venta-mesa">Mesa ${p.mesa} ${estadoHTML}</span>
-                                    <span style="font-size:0.85em; color:#aaa; font-weight:normal;">${cantidadTotalItems} item${cantidadTotalItems !== 1 ? 's' : ''} en total</span>
+                                    <span style="font-size:0.85em; color:#aaa; font-weight:normal;">${cantidadTotalItems} item${cantidadTotalItems !== 1 ? 's' : ''}</span>
                                 </div>
                                 <span class="venta-precio">${formatoCLP(totalPedido)}</span>
                             </div>
+                            <div class="venta-hora">🕒 Pedido a las: ${horaFormateada}</div>
                             
-                            <div id="venta-detalles-${p.id}" style="display:${displayDetalles}; margin-top:10px; border-top:1px solid #444; padding-top:10px;">
+                            <div id="venta-detalles-${p.id}" style="display:${displayDetalles}; margin-top:5px; border-top:1px solid #444; padding-top:10px;">
                                 ${platosHTML}
                             </div>
                             
@@ -160,8 +207,6 @@
 
                 document.getElementById('total-ventas-hoy').innerText = formatoCLP(totalDia);
                 listaVentas.innerHTML = htmlVentas;
-                
-                // Restauramos el scroll para que no salte al actualizar
                 listaVentas.scrollTop = scrollPos;
 
                 // 2. GENERAR TICKETS DE COCINA (PANEL IZQUIERDO)
@@ -181,7 +226,6 @@
                         if(i.sin?.length) i.sin.forEach(x => modsH += `<div class="modificador quitar">- SIN ${x.toUpperCase()}</div>`);
                         if(i.con?.length) i.con.forEach(x => modsH += `<div class="modificador agregar">+ EXTRA ${x.toUpperCase()}</div>`);
                         
-                        // Añadimos la categoría como etiqueta superior al nombre del plato
                         itemsH += `
                             <div class="item-pedido">
                                 <div class="item-nombre">
@@ -227,8 +271,18 @@
             const minutos = Math.floor(diffMs / 60000);
             const segundos = Math.floor((diffMs % 60000) / 1000);
             
+            // NUEVO: Lógica de Horas y Minutos
             const timerEl = document.getElementById(`timer-${id}`);
-            if(timerEl) timerEl.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            if (timerEl) {
+                const horas = Math.floor(minutos / 60);
+                const minsRestantes = minutos % 60;
+                
+                if (horas > 0) {
+                    timerEl.innerText = `${horas}h ${minsRestantes.toString().padStart(2, '0')}m`;
+                } else {
+                    timerEl.innerText = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+                }
+            }
 
             if (minutos >= 20) {
                 ticket.classList.remove('preventivo');
